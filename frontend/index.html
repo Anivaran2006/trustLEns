@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrustLens AI — Intelligent Message Deception & Fraud Investigation</title>
+  <meta name="description" content="Enterprise-grade AI platform for detecting fraudulent, phishing, and deceptive messages with verifiable machine learning and plain-English risk explanations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css?v=2.1">
+  <style>
+    /* Critical First-Paint View Isolation: guarantee non-active views are never visible */
+    .page-view, .tab-pane {
+      display: none !important;
+    }
+    .page-view.active, .tab-pane.active {
+      display: block !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="shield-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">TrustLens <span class="badge-ai">AI</span></h1>
+          <p class="app-subtitle">Message Deception & Fraud Investigation Platform</p>
+        </div>
+      </div>
+
+      <div class="header-status-group">
+        <div id="systemStatusBadge" class="status-pill status-connecting" title="Checking backend readiness...">
+          <span class="status-dot"></span>
+          <span id="systemStatusText">Connecting...</span>
+        </div>
+        <div class="model-pill" id="modelVersionPill" title="Active Model">Model: LogisticRegression v1.0.0</div>
+
+        <!-- Return to Overview (Minimal Auth Header Mode) -->
+        <button type="button" class="btn btn-outline btn-sm btn-header-back hidden" id="btnHeaderBackHome" data-route="home">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Product Overview
+        </button>
+
+        <!-- Account Entry Point in Header -->
+        <div id="headerAuthContainer" class="header-auth-container">
+          <!-- Unauthenticated State: Log In & Create Account CTAs -->
+          <div id="headerGuestActions" class="header-guest-actions">
+            <button type="button" class="btn btn-header-auth" id="btnHeaderSignIn" data-route="login">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              Log In
+            </button>
+            <button type="button" class="btn btn-primary btn-sm btn-header-register" id="btnHeaderRegister" data-route="register">
+              Create Account
+            </button>
+          </div>
+
+          <!-- Authenticated State: User Pill and Dropdown -->
+          <div id="headerUserMenu" class="user-menu-dropdown" style="display: none;">
+            <button type="button" class="user-pill-btn" id="userMenuToggleBtn" aria-haspopup="true" aria-expanded="false" title="Account Menu">
+              <span class="user-avatar-initial" id="userAvatarInitial">U</span>
+              <span class="user-name-label" id="userNameLabel">User</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="user-dropdown-menu" id="userDropdownMenu" role="menu">
+              <div class="user-dropdown-header">
+                <div class="user-dropdown-name" id="dropdownUserName">User Name</div>
+                <div class="user-dropdown-email" id="dropdownUserEmail">user@example.com</div>
+              </div>
+              <div class="user-dropdown-divider"></div>
+              <button type="button" class="user-dropdown-item" id="dropdownItemAccount" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                My Account
+              </button>
+              <button type="button" class="user-dropdown-item" id="dropdownItemMyScans" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                My Scan History
+              </button>
+              <div class="user-dropdown-divider"></div>
+              <button type="button" class="user-dropdown-item user-dropdown-logout" id="dropdownItemLogout" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-outline btn-sm btn-header-alexa" id="btnHeaderAlexa" data-route="alexa">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Alexa+ Simulation
+        </button>
+        <button type="button" class="btn btn-primary btn-sm btn-header-cta" id="btnHeaderScanner" data-route="scanner">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Open Scanner
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Tabs -->
+  <nav class="nav-tabs-bar" id="mainNavTabsBar" aria-label="Main Navigation">
+    <div class="nav-container">
+      <button class="nav-tab active" data-route="home" data-tab="landingTab" id="tabBtnLanding">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Product Overview
+      </button>
+      <button class="nav-tab" data-route="alexa" data-tab="alexaSimTab" id="tabBtnAlexaSim">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Alexa+ Experience
+        <span class="nav-badge-alexa">Demo</span>
+      </button>
+      <button class="nav-tab protected-nav-tab" data-route="scanner" data-tab="scannerTab" id="tabBtnScanner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Message Scanner
+      </button>
+      <button class="nav-tab protected-nav-tab" data-route="dashboard" data-tab="dashboardTab" id="tabBtnDashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Investigation Dashboard
+      </button>
+      <button class="nav-tab protected-nav-tab" data-route="history" data-tab="historyTab" id="tabBtnHistory">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Audit & Scan History
+      </button>
+      <button class="nav-tab protected-nav-tab" data-route="samples" data-tab="samplesTab" id="tabBtnSamples">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Threat Samples
+      </button>
+      <button class="nav-tab protected-nav-tab" data-route="model" data-tab="architectureTab" id="tabBtnArchitecture">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/></svg>
+        Model & Verification
+      </button>
+    </div>
+  </nav>
+
+  <!-- Global Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Main View Container -->
+  <main class="main-content">
+
+    <!-- TAB 0: PUBLIC LANDING PAGE & PRODUCT OVERVIEW -->
+    <section id="landingTab" class="tab-pane page-view active" aria-labelledby="tabBtnLanding">
+      <div class="landing-experience">
+        
+        <!-- HERO SECTION -->
+        <header class="landing-hero reveal-on-scroll">
+          <div class="hero-content">
+            <div class="hero-badge" id="heroHackathonBadge" style="cursor:pointer;" data-route="alexa" title="Launch Alexa+ Simulated Experience">
+              <span class="badge-dot badge-dot-alexa"></span>
+              <span>Amazon Developer Hackathon: Alexa+ Simulated Experience Active &rarr;</span>
+            </div>
+            <h1 class="hero-headline">
+              AI-Assisted Suspicious Message & Fraud Analysis
+            </h1>
+            <p class="hero-lead">
+              TrustLens AI analyzes deceptive SMS smishing, banking impersonation, and fraudulent invoices using a calibrated scikit-learn machine learning classifier paired with observable threat indicator extraction and an interactive AI copilot.
+            </p>
+            <div class="hero-cta-group">
+              <button type="button" class="btn btn-alexa btn-lg" id="heroBtnAlexa" data-route="alexa">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Alexa+ Experience
+              </button>
+              <button type="button" class="btn btn-primary btn-lg" id="heroBtnScanner">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Open Message Scanner
+              </button>
+              <a href="#howItWorksSection" class="btn btn-secondary btn-lg" id="heroBtnHowItWorks">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                How It Works
+              </a>
+              <button type="button" class="btn btn-outline btn-lg" id="heroBtnSamples">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                Threat Samples
+              </button>
+            </div>
+            
+            <div class="hero-trust-signals">
+              <div class="trust-signal-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>98.94% Holdout Accuracy</span>
+              </div>
+              <div class="trust-signal-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>0.22% False Positive Rate</span>
+              </div>
+              <div class="trust-signal-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Zero Stored Plaintext PII</span>
+              </div>
+              <div class="trust-signal-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Offline Autonomous Fallback</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Labeled Demonstration Card -->
+          <div class="hero-preview-wrapper">
+            <div class="demo-card">
+              <div class="demo-card-header">
+                <div class="demo-header-title">
+                  <span class="live-dot"></span>
+                  <span>Interactive Labeled Demonstration</span>
+                </div>
+                <div class="demo-pill">Real Model Predictions</div>
+              </div>
+
+              <div class="demo-tabs-bar" role="tablist" aria-label="Demo sample switcher">
+                <button type="button" class="demo-tab active" data-sample="bank" role="tab" aria-selected="true" id="demoTabBank">Bank Alert</button>
+                <button type="button" class="demo-tab" data-sample="usps" role="tab" aria-selected="false" id="demoTabUsps">Delivery Fee</button>
+                <button type="button" class="demo-tab" data-sample="clean" role="tab" aria-selected="false" id="demoTabClean">Legit OTP</button>
+              </div>
+
+              <div class="demo-body">
+                <div class="demo-sample-box">
+                  <div class="demo-box-label">Untrusted Input Message:</div>
+                  <div class="demo-sample-text" id="demoSampleText">
+                    URGENT: Chase Bank Alert. Your debit card has been suspended due to unusual activity. Verify your identity immediately to restore access: http://chase-secure-verify.com/login
+                  </div>
+                </div>
+
+                <div class="demo-results-grid">
+                  <div class="demo-result-box">
+                    <span class="demo-box-sub">Trained ML Probability:</span>
+                    <div class="demo-score-display">
+                      <span class="risk-badge risk-high" id="demoRiskBadge">HIGH RISK</span>
+                      <strong class="demo-prob-val" id="demoScoreVal">94% Suspicious</strong>
+                    </div>
+                  </div>
+                  <div class="demo-result-box">
+                    <span class="demo-box-sub">Model Architecture:</span>
+                    <div class="demo-meta-val">Logistic Regression (TF-IDF 1-2g)</div>
+                  </div>
+                </div>
+
+                <div class="demo-indicators-box">
+                  <span class="demo-box-sub">Observable Threat Evidence:</span>
+                  <div class="demo-tags-wrap" id="demoIndicatorsList">
+                    <span class="indicator-tag">Suspicious Domain: chase-secure-verify.com</span>
+                    <span class="indicator-tag">Cognitive Urgency: suspended</span>
+                    <span class="indicator-tag">Credential Harvester Lure</span>
+                  </div>
+                </div>
+
+                <div class="demo-ai-summary" id="demoAiSummary">
+                  <strong>AI Copilot Assessment:</strong> Impersonates Chase financial institution using urgency cues and an unverified external domain to harvest banking credentials.
+                </div>
+
+                <button type="button" class="btn btn-primary btn-block" id="btnLaunchInScanner">
+                  <span>Analyze in Full Scanner Console &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- PROBLEM & SOLUTION SECTION -->
+        <section class="landing-section reveal-on-scroll" id="problemSolutionSection">
+          <div class="section-title-wrap">
+            <div class="section-eyebrow">The Cybersecurity Challenge</div>
+            <h2 class="section-heading">Why Social Engineering Evades Traditional Defenses</h2>
+            <p class="section-subheading">
+              Attackers continuously weaponize psychological urgency, disposable domains, and brand impersonation. Relying solely on static blacklists or ungrounded generative AI leaves users vulnerable.
+            </p>
+          </div>
+
+          <div class="problem-solution-grid">
+            <div class="ps-card problem-card">
+              <div class="ps-header">
+                <div class="ps-icon ps-icon-danger">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <h3 class="ps-title">The Limitations of Conventional Filters</h3>
+              </div>
+              <ul class="ps-list">
+                <li>
+                  <strong>Ephemeral Threat Infrastructure:</strong> Attackers register short-lived domains (`.xyz`, `.top`) that bypass domain reputation feeds before lists can update.
+                </li>
+                <li>
+                  <strong>Cognitive Exploitation:</strong> Messages trigger fear (account suspensions, missed deliveries, legal notices) to bypass logical judgment.
+                </li>
+                <li>
+                  <strong>Black-Box LLM Hallucinations:</strong> Asking a generic conversational LLM whether a message is safe often produces inconsistent answers and vulnerable to prompt injection.
+                </li>
+                <li>
+                  <strong>Blind Faith in Binary Labels:</strong> Traditional scanners output "Safe" or "Spam" without providing transparent evidence for human validation.
+                </li>
+              </ul>
+            </div>
+
+            <div class="ps-card solution-card">
+              <div class="ps-header">
+                <div class="ps-icon ps-icon-success">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                </div>
+                <h3 class="ps-title">The TrustLens AI Multi-Layered Approach</h3>
+              </div>
+              <ul class="ps-list">
+                <li>
+                  <strong>Empirically Trained ML Classifier:</strong> Scikit-learn Logistic Regression trained on 5,171 deduplicated messages computes calibrated statistical probabilities.
+                </li>
+                <li>
+                  <strong>Deterministic Evidence Extraction:</strong> Explicit extraction of domains, shortcodes, and financial claims prevents subjective guesswork.
+                </li>
+                <li>
+                  <strong>Prompt-Injection Shielded AI:</strong> Untrusted text is strictly isolated in data tags so embedded commands cannot hijack the investigation agent.
+                </li>
+                <li>
+                  <strong>Evidence vs Assumption Transparency:</strong> Clear distinction between verifiable textual observations and contextual risk implications.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="truthful-notice-card">
+            <div class="notice-icon">ℹ️</div>
+            <div class="notice-content">
+              <strong>Truthful Security & Accuracy Notice:</strong>
+              No machine learning system or AI assistant can detect 100% of deceptive communications or guarantee absolute security. TrustLens AI is engineered to augment human judgment with explainable evidence. Always verify unexpected financial or credential requests directly through official, verified channels (such as the phone number on your bank card).
+            </div>
+          </div>
+        </section>
+
+        <!-- HOW IT WORKS (VISUAL TIMELINE) -->
+        <section class="landing-section reveal-on-scroll" id="howItWorksSection">
+          <div class="section-title-wrap">
+            <div class="section-eyebrow">Transparent Methodology</div>
+            <h2 class="section-heading">How TrustLens AI Investigates Messages</h2>
+            <p class="section-subheading">
+              A 6-stage verifiable pipeline that transforms untrusted inputs into structured, explainable threat assessments.
+            </p>
+          </div>
+
+          <div class="workflow-timeline">
+            <div class="timeline-track" aria-hidden="true"></div>
+
+            <div class="timeline-step">
+              <div class="step-marker">1</div>
+              <div class="step-card">
+                <div class="step-badge">Stage 1: Ingestion</div>
+                <h4 class="step-title">Message Submission</h4>
+                <p class="step-desc">Paste untrusted SMS/email text or stage an invoice/QR screenshot. Clipboard paste (Ctrl+V) and sample demo payloads are supported.</p>
+              </div>
+            </div>
+
+            <div class="timeline-step">
+              <div class="step-marker">2</div>
+              <div class="step-card">
+                <div class="step-badge">Stage 2: Preprocessing</div>
+                <h4 class="step-title">Security Tokenization</h4>
+                <p class="step-desc">`SecurityTextPreprocessor` preserves threat indicators by mapping links to `__URL__`, amounts to `__CURRENCY__`, and numbers to `__PHONE__`.</p>
+              </div>
+            </div>
+
+            <div class="timeline-step">
+              <div class="step-marker">3</div>
+              <div class="step-card">
+                <div class="step-badge">Stage 3: ML Inference</div>
+                <h4 class="step-title">Trained Model Scoring</h4>
+                <p class="step-desc">Logistic Regression evaluates sublinear TF-IDF n-grams to output a calibrated probability $P(\text{deceptive} \mid x)$ without hallucination.</p>
+              </div>
+            </div>
+
+            <div class="timeline-step">
+              <div class="step-marker">4</div>
+              <div class="step-card">
+                <div class="step-badge">Stage 4: Extraction</div>
+                <h4 class="step-title">Observable Warning Signs</h4>
+                <p class="step-desc">Heuristics parse suspicious top-level domains, credential harvesting lures, and urgency triggers into concrete lists of evidence.</p>
+              </div>
+            </div>
+
+            <div class="timeline-step">
+              <div class="step-marker">5</div>
+              <div class="step-card">
+                <div class="step-badge">Stage 5: Synthesis</div>
+                <h4 class="step-title">AI Explanation Agent</h4>
+                <p class="step-desc">Amazon Bedrock (or offline rule-based NLP) synthesizes an accessible summary, highlighting direct observations vs implications.</p>
+              </div>
+            </div>
+
+            <div class="timeline-step">
+              <div class="step-marker">6</div>
+              <div class="step-card">
+                <div class="step-badge">Stage 6: Action</div>
+                <h4 class="step-title">Risk Tier & Safety Actions</h4>
+                <p class="step-desc">Results are displayed in categorized risk levels (Low, Medium, High) with concrete safety recommendations and an interactive AI copilot.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VERIFIED CAPABILITIES / FEATURES -->
+        <section class="landing-section reveal-on-scroll" id="featuresSection">
+          <div class="section-title-wrap">
+            <div class="section-eyebrow">Verified Capabilities</div>
+            <h2 class="section-heading">Built for Rigorous Cybersecurity Analysis</h2>
+            <p class="section-subheading">
+              Every advertised feature below is actively implemented, tested, and operational in this application.
+            </p>
+          </div>
+
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div class="feature-status-tag status-verified">Verified Implementation</div>
+              <h3 class="feature-title">NLP Machine Learning Classification</h3>
+              <p class="feature-desc">
+                TF-IDF vectorizer (1-2 n-grams) paired with production Logistic Regression. Evaluated on 1,035 unseen test messages with 98.94% accuracy and 98.39% precision.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </div>
+              <div class="feature-status-tag status-verified">Verified Implementation</div>
+              <h3 class="feature-title">Observable Threat Extraction</h3>
+              <p class="feature-desc">
+                Heuristic inspection extracts exact web links, domain anomalies, currency requests, phone shortcodes, and cognitive urgency triggers without altering original content.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <div class="feature-status-tag status-optional">Bedrock Vision & Offline Heuristic</div>
+              <h3 class="feature-title">Multimodal Forensics (Quishing & Invoices)</h3>
+              <p class="feature-desc">
+                Inspects QR codes (Quishing) and extracts embedded URLs without hazardous redirection. Evaluates fake invoices and extortion PDFs using multimodal vision or offline CV heuristics.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div class="feature-status-tag status-verified">Verified Implementation</div>
+              <h3 class="feature-title">Interactive Grounded AI Copilot</h3>
+              <p class="feature-desc">
+                An embedded assistant ready to answer follow-up questions about analyzed threats. Strictly grounded on extracted evidence with prompt-injection defense.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              </div>
+              <div class="feature-status-tag status-verified">Verified Implementation</div>
+              <h3 class="feature-title">Live KPI Dashboard & Metrics</h3>
+              <p class="feature-desc">
+                Real-time dashboard summarizing total investigations, clean vs suspicious rates, average risk scores, and balanced risk distribution with zero count discrepancies.
+              </p>
+            </div>
+
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div class="feature-status-tag status-verified">Verified Implementation</div>
+              <h3 class="feature-title">Privacy-Preserving Audit Ledger</h3>
+              <p class="feature-desc">
+                Redacts credit card numbers, passwords, and sensitive PII prior to SQLite storage. SHA-256 message hashing ensures deduplication without plaintext retention.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- AI & MACHINE LEARNING DEEP-DIVE -->
+        <section class="landing-section reveal-on-scroll" id="aiMlSection">
+          <div class="section-title-wrap">
+            <div class="section-eyebrow">Explainable Intelligence</div>
+            <h2 class="section-heading">ML Classifier vs. Generative AI: Distinct Roles</h2>
+            <p class="section-subheading">
+              TrustLens AI clearly separates statistical machine learning classification from generative natural language explanation.
+            </p>
+          </div>
+
+          <div class="ai-distinction-grid">
+            <div class="distinction-card">
+              <div class="distinction-badge">1. Statistical ML</div>
+              <h4 class="distinction-title">Trained ML Classifier</h4>
+              <p class="distinction-desc">
+                Logistic Regression model with balanced class weights trained strictly on the UCI SMS dataset. Computes a fast, unhallucinated deception probability on server CPU.
+              </p>
+            </div>
+
+            <div class="distinction-card">
+              <div class="distinction-badge">2. Calibrated Output</div>
+              <h4 class="distinction-title">Calibrated Risk Scores</h4>
+              <p class="distinction-desc">
+                Posterior probability $P(\text{deceptive} \mid x)$ mapped directly into defensible risk tiers: Low (<35%), Medium (35-65%), and High (>65%).
+              </p>
+            </div>
+
+            <div class="distinction-card">
+              <div class="distinction-badge">3. Deterministic NLP</div>
+              <h4 class="distinction-title">Extracted Evidence</h4>
+              <p class="distinction-desc">
+                Unambiguous structural facts identified in the message body: exact suspicious URLs, domain extensions, phone shortcodes, and urgency terms.
+              </p>
+            </div>
+
+            <div class="distinction-card">
+              <div class="distinction-badge">4. Generative Synthesis</div>
+              <h4 class="distinction-title">LLM Interpretation</h4>
+              <p class="distinction-desc">
+                Amazon Bedrock or grounded rule-based NLP synthesizes findings into plain-English reasoning, separating verifiable facts from implications.
+              </p>
+            </div>
+          </div>
+
+          <!-- Real Holdout Metrics Card -->
+          <div class="model-metrics-card">
+            <div class="metrics-card-header">
+              <div>
+                <h3 class="metrics-title">UCI SMS Spam Collection (Holdout Test Evaluation)</h3>
+                <p class="metrics-sub">Evaluated on 1,035 strictly unseen test samples (904 legitimate, 131 deceptive) with zero data leakage.</p>
+              </div>
+              <span class="dataset-pill">Dataset: UCI ID 228 (CC BY 4.0)</span>
+            </div>
+
+            <div class="metrics-kpi-grid">
+              <div class="metric-kpi-box">
+                <span class="metric-val">98.94%</span>
+                <span class="metric-lbl">Holdout Accuracy</span>
+              </div>
+              <div class="metric-kpi-box">
+                <span class="metric-val">98.39%</span>
+                <span class="metric-lbl">Holdout Precision</span>
+              </div>
+              <div class="metric-kpi-box">
+                <span class="metric-val">93.13%</span>
+                <span class="metric-lbl">Holdout Recall</span>
+              </div>
+              <div class="metric-kpi-box">
+                <span class="metric-val">0.9569</span>
+                <span class="metric-lbl">Holdout F1-Score</span>
+              </div>
+              <div class="metric-kpi-box">
+                <span class="metric-val">0.9933</span>
+                <span class="metric-lbl">Holdout ROC-AUC</span>
+              </div>
+            </div>
+
+            <div class="confusion-matrix-wrapper">
+              <h4 class="cm-title">Test Set Confusion Matrix (1,035 Samples)</h4>
+              <div class="cm-grid">
+                <div class="cm-cell cm-tn">
+                  <span class="cm-count">902</span>
+                  <span class="cm-label">True Legitimate (TN)</span>
+                  <span class="cm-desc">Correctly classified clean</span>
+                </div>
+                <div class="cm-cell cm-fp">
+                  <span class="cm-count">2</span>
+                  <span class="cm-label">False Deceptive (FP)</span>
+                  <span class="cm-desc">0.22% False Positive Rate</span>
+                </div>
+                <div class="cm-cell cm-fn">
+                  <span class="cm-count">9</span>
+                  <span class="cm-label">Missed Threats (FN)</span>
+                  <span class="cm-desc">6.87% False Negative Rate</span>
+                </div>
+                <div class="cm-cell cm-tp">
+                  <span class="cm-count">122</span>
+                  <span class="cm-label">True Deceptive (TP)</span>
+                  <span class="cm-desc">93.13% Deceptive Recall</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PRIVACY & LIMITATIONS -->
+        <section class="landing-section reveal-on-scroll" id="privacySection">
+          <div class="section-title-wrap">
+            <div class="section-eyebrow">Privacy & Responsible AI</div>
+            <h2 class="section-heading">Data Handling, Privacy & Known Limitations</h2>
+            <p class="section-subheading">
+              Grounded exclusively in our actual implementation: how data is secured, when cloud services are contacted, and where model limits lie.
+            </p>
+          </div>
+
+          <div class="privacy-grid">
+            <div class="privacy-card">
+              <div class="privacy-icon">🔒</div>
+              <h3 class="privacy-title">Data Storage & Redaction</h3>
+              <p class="privacy-desc">
+                When scans are recorded, raw text is automatically sanitized with regex rules to mask 16-digit credit card numbers (`[REDACTED_CARD_NUMBER]`), email addresses, and credentials. Full bodies are hashed via SHA-256 for audit lookups.
+              </p>
+            </div>
+
+            <div class="privacy-card">
+              <div class="privacy-icon">🌐</div>
+              <h3 class="privacy-title">Cloud vs Local Processing</h3>
+              <p class="privacy-desc">
+                When Amazon Bedrock is configured with valid AWS credentials, text is sent over encrypted TLS directly to AWS Bedrock Converse API. When unconfigured, 100% of processing runs completely locally and offline on your own machine.
+              </p>
+            </div>
+
+            <div class="privacy-card">
+              <div class="privacy-icon">⚠️</div>
+              <h3 class="privacy-title">Model Limitations & Advisory Use</h3>
+              <p class="privacy-desc">
+                Our model operates primarily on English SMS/email patterns. Sophisticated zero-day phishing or multilingual scams may evade detection (6.87% holdout false negative rate). Results are advisory; always confirm through official banking/vendor channels.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- FINAL CALL TO ACTION BANNER -->
+        <section class="landing-cta-banner reveal-on-scroll">
+          <div class="cta-banner-content">
+            <div class="cta-shield-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <h2 class="cta-banner-title">Start Investigating Suspicious Messages</h2>
+            <p class="cta-banner-desc">
+              Test an SMS message, inspect an invoice or QR code, or explore our curated threat sample library.
+            </p>
+            <div class="cta-banner-actions">
+              <button type="button" class="btn btn-primary btn-lg" id="finalBtnScanner">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Open Message Scanner
+              </button>
+              <button type="button" class="btn btn-secondary btn-lg" id="finalBtnDashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                Investigation Dashboard
+              </button>
+              <button type="button" class="btn btn-outline btn-lg" id="finalBtnModelCard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/></svg>
+                Inspect Model Card
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    
+<footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-grid">
+        
+        <!-- Column 1: Brand & Mission -->
+        <div class="footer-col footer-col-brand">
+          <div class="footer-logo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            <span class="footer-brand-text">TrustLens <span class="badge-ai-sm">AI</span></span>
+          </div>
+          <p class="footer-desc">
+            An open, verifiable AI investigation platform for analyzing suspicious communications, smishing, and deceptive documents using calibrated machine learning and structured evidence.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-tech-pill">Python 3.10+</span>
+            <span class="footer-tech-pill">FastAPI</span>
+            <span class="footer-tech-pill">Scikit-learn</span>
+          </div>
+        </div>
+
+        <!-- Column 2: Platform Navigation -->
+        <div class="footer-col">
+          <h4 class="footer-heading">Platform</h4>
+          <ul class="footer-links">
+            <li><button type="button" class="footer-link-btn" data-target="landingTab" data-route="home">Product Overview</button></li>
+            <li><button type="button" class="footer-link-btn" data-target="scannerTab" data-route="scanner">Message Scanner</button></li>
+            <li><button type="button" class="footer-link-btn" data-target="dashboardTab" data-route="dashboard">Investigation Dashboard</button></li>
+            <li><button type="button" class="footer-link-btn" data-target="historyTab" data-route="history">Audit & Scan History</button></li>
+            <li><button type="button" class="footer-link-btn" data-target="samplesTab" data-route="samples">Threat Sample Library</button></li>
+            <li><button type="button" class="footer-link-btn" data-target="architectureTab" data-route="model">Model & Verification</button></li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Technologies Used -->
+        <div class="footer-col">
+          <h4 class="footer-heading">Verified Tech Stack</h4>
+          <ul class="footer-links">
+            <li><span>Python FastAPI REST Core</span></li>
+            <li><span>Scikit-learn Logistic Regression</span></li>
+            <li><span>Sublinear TF-IDF Vectorizer</span></li>
+            <li><span>SQLite & SQLAlchemy ORM</span></li>
+            <li><span>SlowAPI Rate Limiter</span></li>
+            <li><span>Amazon Bedrock Converse API</span></li>
+            <li><span>Pure Vanilla HTML5, CSS & JS</span></li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Responsible AI & Data Provenance -->
+        <div class="footer-col">
+          <h4 class="footer-heading">Responsible AI</h4>
+          <ul class="footer-links">
+            <li><span>Dataset: UCI SMS Spam (CC BY 4.0)</span></li>
+            <li><span>Ground-Truth Isolation Ledger</span></li>
+            <li><span>Sensitive PII Regex Redaction</span></li>
+            <li><span>SHA-256 Message Hashing</span></li>
+            <li><span>Prompt Injection Neutralization</span></li>
+            <li><span>Zero Third-Party Ad Trackers</span></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Educational Advisory Notice -->
+      <div class="footer-disclaimer-box">
+        <strong>EDUCATIONAL & ADVISORY NOTICE:</strong> TrustLens AI is a cybersecurity research and demonstration application. Risk evaluations and AI copilot interpretations are automated estimates derived from pattern recognition and heuristics; they do not guarantee safety or detect every deceptive communication. Never enter credentials, transfer funds, or release confidential information without independently verifying unexpected requests through official, verified channels (such as the phone number on your physical bank card).
+      </div>
+
+      <!-- Copyright & Open Source Notice -->
+      <div class="footer-bottom-bar">
+        <div>&copy; 2026 TrustLens AI. All rights reserved. Open-source research demonstration under MIT / CC BY 4.0.</div>
+        <div class="footer-bottom-meta">Zero Tracking Cookies &bull; Accessible WCAG 2.1 AA Compliant</div>
+      </div>
+    </div>
+  </footer>
+    </section>
+
+    <!-- TAB: ALEXA+ SIMULATED EXPERIENCE (AMAZON DEVELOPER HACKATHON DEMO) -->
+    <section id="alexaSimTab" class="tab-pane page-view hidden" aria-labelledby="tabBtnAlexaSim">
+      <div class="alexa-sim-experience">
+        
+        <!-- Header Card -->
+        <header class="alexa-header-card">
+          <div class="alexa-header-left">
+            <div class="alexa-orb-wrap">
+              <div class="alexa-orb-ring"></div>
+              <svg class="alexa-orb-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="alexa-header-info">
+              <div class="alexa-title-row">
+                <h2 class="alexa-title">Alexa+ Simulated Experience</h2>
+                <span class="alexa-sim-badge">Amazon Developer Hackathon Demo</span>
+                <span class="status-pill status-ready" id="alexaBackendPill">
+                  <span class="status-dot status-ready"></span>
+                  Connected to Real ML Engine
+                </span>
+              </div>
+              <p class="alexa-subtitle">Conversational Cyberfraud Investigation Skill powered by genuine TrustLens AI models</p>
+              <div class="alexa-tags-row">
+                <span class="alexa-tag">Permitted Simulated Experience Path</span>
+                <span class="alexa-tag">Model: LogisticRegression v1.0.0</span>
+                <span class="alexa-tag" id="alexaProviderTag">NLP Engine: Rule-Based Fallback (Zero-Cost)</span>
+                <span class="alexa-tag">MCP Tools: 3 Active</span>
+              </div>
+            </div>
+          </div>
+          <div class="alexa-header-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnViewMcpTools">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              View MCP Tool Schema
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="btnResetAlexaChat" title="Reset conversational context and clear history">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              Reset Session
+            </button>
+          </div>
+        </header>
+
+        <!-- Official Hackathon Notice Banner -->
+        <div class="alexa-notice-banner" role="region" aria-label="Hackathon Simulation Disclosure">
+          <svg class="alexa-notice-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div class="alexa-notice-content">
+            <strong>OFFICIAL HACKATHON DEMONSTRATION DISCLOSURE:</strong>
+            This interface demonstrates the officially permitted Alexa+ simulated-experience path for the <em>Amazon Developer Hackathon (Build, Ship, Shape)</em>.
+            Amazon's live Alexa+ developer endpoints are gated to select preview partners.
+            This simulation invokes the real, self-hosted TrustLens AI backend: executing verified scikit-learn statistical ML inference, regex-based NLP security indicator extraction, and grounded evidence reasoning. No voice synthesis or paid services are simulated.
+          </div>
+        </div>
+
+        <!-- Preset Quick-Test Scenarios Card -->
+        <div class="alexa-presets-card">
+          <div class="alexa-presets-header">
+            <div class="alexa-presets-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Quick-Test Real Threat &amp; Legitimate Scenarios (1-Click Test)
+            </div>
+            <span style="font-size:0.75rem;color:var(--text-muted);">Clicking any scenario sends it directly to the assistant</span>
+          </div>
+          <div class="alexa-presets-grid" id="alexaPresetsGrid">
+            <button type="button" class="alexa-preset-btn" data-scenario="bank_phishing">
+              <span class="alexa-preset-tag preset-tag-high">High Risk Smishing</span>
+              <span class="alexa-preset-name">Chase Bank Alert</span>
+              <span class="alexa-preset-preview">"CHASE ALERT: Your account has been temporarily locked due to unusual debit activity..."</span>
+            </button>
+            <button type="button" class="alexa-preset-btn" data-scenario="parcel_smishing">
+              <span class="alexa-preset-tag preset-tag-high">High Risk Smishing</span>
+              <span class="alexa-preset-name">USPS Package Fee Scam</span>
+              <span class="alexa-preset-preview">"USPS Notification: Package #US984210 cannot be delivered due to missing house number..."</span>
+            </button>
+            <button type="button" class="alexa-preset-btn" data-scenario="lottery_fraud">
+              <span class="alexa-preset-tag preset-tag-high">High Risk Fraud</span>
+              <span class="alexa-preset-name">Lottery Winner Scam</span>
+              <span class="alexa-preset-preview">"CONGRATULATIONS! You have been selected as the 2nd place winner of &pound;1,000,000 cash..."</span>
+            </button>
+            <button type="button" class="alexa-preset-btn" data-scenario="legit_appointment">
+              <span class="alexa-preset-tag preset-tag-low">Legitimate (Clean HAM)</span>
+              <span class="alexa-preset-name">Doctor Appointment</span>
+              <span class="alexa-preset-preview">"Hey Alex, confirming our doctor appointment tomorrow at 2:30 PM with Dr. Miller at the clinic..."</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Conversational Stage Card -->
+        <div class="alexa-chat-card">
+          <!-- Chat Feed Stream -->
+          <div class="alexa-chat-feed" id="alexaChatFeed" role="log" aria-live="polite">
+            <!-- Initial Welcome Message from Alexa+ -->
+            <div class="alexa-msg alexa-msg-assistant">
+              <div class="alexa-avatar-sm">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <div class="alexa-bubble">
+                <div class="alexa-sender-tag">
+                  <span>Alexa+ Assistant &bull; TrustLens AI Agent Skill</span>
+                  <span class="alexa-tool-badge">Model: Scikit-Learn TF-IDF</span>
+                </div>
+                <div class="alexa-spoken-text">
+                  <p>Hello! I am your <strong>Alexa+ Cybersecurity Assistant</strong>, powered by <strong>TrustLens AI</strong>.</p>
+                  <p>You can ask me to evaluate whether a text message, delivery notification, or suspicious email is a fraud or phishing attempt.</p>
+                  <p><strong>How to test:</strong> Click one of the quick-test scenarios above, or paste an untrusted communication into the message input below.</p>
+                </div>
+                <div class="alexa-chips-wrap">
+                  <button type="button" class="alexa-chip" data-prompt="Check Chase bank alert sample">Check Chase bank alert sample &rarr;</button>
+                  <button type="button" class="alexa-chip" data-prompt="Check USPS delivery fee sample">Check USPS delivery fee sample &rarr;</button>
+                  <button type="button" class="alexa-chip" data-prompt="Check doctor appointment sample">Check doctor appointment sample &rarr;</button>
+                  <button type="button" class="alexa-chip" data-prompt="What can you do?">What can you do? &rarr;</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thinking / Progress Indicator (Hidden by default) -->
+          <div id="alexaThinkingIndicator" class="alexa-thinking-bubble hidden" style="padding: 10px 24px;">
+            <div class="alexa-avatar-sm" style="width:28px;height:28px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <span>Alexa is inspecting message via TrustLens MCP tools</span>
+            <div class="alexa-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
+          <!-- Bottom Message Input Area -->
+          <div class="alexa-input-wrap">
+            <div class="alexa-input-row">
+              <textarea 
+                id="alexaQueryInput" 
+                class="alexa-textarea" 
+                placeholder="Ask Alexa to check a message, paste an SMS/email, or ask a question (e.g. 'Why is this suspicious?')..." 
+                rows="1"
+                aria-label="Message inquiry input"
+              ></textarea>
+              <button type="button" id="btnSendAlexaQuery" class="alexa-btn-send" title="Send message to Alexa+">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Send
+              </button>
+            </div>
+            <div class="alexa-input-meta">
+              <span>Shift+Enter for newline &bull; Enter to send</span>
+              <span id="alexaInputCharCount">0 / 1500 chars</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Compact Footer -->
+      <footer class="app-footer-compact" style="margin-top: 24px;">
+        <div class="footer-compact-container">
+          <span>&copy; 2026 TrustLens AI &bull; Amazon Developer Hackathon (Alexa+ Simulated Experience Track)</span>
+          <span class="footer-compact-meta">Zero PII Persistence &bull; Self-Hosted Machine Learning Pipeline</span>
+        </div>
+      </footer>
+    </section>
+
+    <!-- TAB 1: MESSAGE SCANNER -->
+    <section id="scannerTab" class="tab-pane page-view hidden" aria-labelledby="tabBtnScanner">
+      <div class="scanner-grid">
+        <!-- Main Investigation Column -->
+        <div class="scanner-main-col">
+        
+        <!-- Input Console -->
+        <div class="card console-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h2 class="card-title">Message Investigation Console</h2>
+              <p class="card-description">Inspect untrusted SMS messages, emails, screenshots, QR codes (Quishing), and deceptive invoices.</p>
+            </div>
+            <div class="quick-sample-selector" id="textQuickSampleWrapper">
+              <label for="quickSampleSelect" class="sr-only">Quick sample</label>
+              <select id="quickSampleSelect" class="select-sm">
+                <option value="">Load a threat sample...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Scanner Mode Switcher -->
+          <div class="scanner-mode-switch">
+            <button type="button" class="mode-btn active" id="btnModeText">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Text Message Scanner
+            </button>
+            <button type="button" class="mode-btn" id="btnModeMultimodal">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              Multi-Modal Forensics <span class="badge-feature">Bedrock Vision</span>
+            </button>
+          </div>
+
+          <!-- VIEW A: Standard Text Message Scanner -->
+          <div id="textInputView" class="input-container">
+            <textarea 
+              id="messageInput" 
+              class="message-textarea" 
+              rows="6" 
+              maxlength="5000"
+              placeholder="e.g. URGENT: Your bank account has been suspended! Click http://secure-verify.com to login now or funds will be lost."
+              aria-label="Message to analyze"
+            ></textarea>
+            
+            <div class="textarea-footer">
+              <span id="charCounter" class="char-counter">0 / 5,000 characters</span>
+              <div class="textarea-actions">
+                <button type="button" id="btnPasteClipboard" class="btn btn-secondary btn-sm" title="Paste from clipboard">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                  Paste
+                </button>
+                <button type="button" id="btnClearInput" class="btn btn-secondary btn-sm" title="Clear input">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW B: Multi-Modal Forensic Upload (Screenshots, QR, Invoices) -->
+          <div id="multimodalInputView" class="input-container hidden">
+            <!-- 1-Click Forensic Samples Demo Bar -->
+            <div class="forensic-samples-bar">
+              <span class="samples-bar-label">1-Click Hackathon Demos:</span>
+              <button type="button" class="btn-sample-chip" id="btnSampleQuishing">
+                <span class="chip-icon">⚠️</span> Quishing QR Code Toll Scam
+              </button>
+              <button type="button" class="btn-sample-chip" id="btnSampleInvoice">
+                <span class="chip-icon">🧾</span> Fake Amazon $899 Invoice
+              </button>
+            </div>
+
+            <!-- Drag & Drop Zone -->
+            <div id="dropZone" class="dropzone" tabindex="0" role="button" aria-label="Upload document or image">
+              <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,application/pdf" class="hidden">
+              <div class="dropzone-content">
+                <div class="dropzone-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <p class="dropzone-title">Drag & drop forensic image, QR code, or invoice PDF</p>
+                <p class="dropzone-subtitle">or <span class="dropzone-browse">browse files</span> &bull; <strong>Ctrl+V</strong> to paste screenshot directly</p>
+                <div class="dropzone-formats">
+                  <span>PNG</span><span>JPG</span><span>WEBP</span><span>PDF</span>
+                  <span class="size-limit">Up to 10 MB</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Uploaded File Preview Box -->
+            <div id="filePreviewBox" class="file-preview-box hidden">
+              <div class="preview-thumb-wrap">
+                <img id="filePreviewThumb" src="" alt="Forensic media preview" class="preview-thumb">
+                <div id="pdfIconPlaceholder" class="pdf-placeholder hidden">PDF</div>
+              </div>
+              <div class="preview-meta">
+                <div class="preview-filename" id="filePreviewName">screenshot.png</div>
+                <div class="preview-size" id="filePreviewSize">240 KB</div>
+                <div class="preview-tag" id="filePreviewType">Image Artifact</div>
+              </div>
+              <button type="button" id="btnRemoveFile" class="btn btn-secondary btn-sm" title="Remove file">&times; Remove</button>
+            </div>
+
+            <!-- Optional Submitter Note -->
+            <div class="media-note-wrap">
+              <input 
+                type="text" 
+                id="mediaNoteInput" 
+                class="input-sm media-note-input" 
+                placeholder="Optional context note (e.g. 'Received via MMS from unverified number')" 
+                maxlength="200"
+              >
+            </div>
+          </div>
+
+          <div class="console-actions">
+            <div class="disclaimer-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>User inputs are isolated untrusted data. Prompt-injection and adversarial multimodal defenses active.</span>
+            </div>
+            <button type="button" id="btnAnalyze" class="btn btn-primary btn-lg">
+              <span class="btn-spinner hidden" id="analyzeSpinner"></span>
+              <span class="btn-text" id="analyzeBtnText">Analyze Message</span>
+            </button>
+          </div>
+        </div>
+
+
+        
+        <!-- Pre-Scan Threat Guidance & Fast-Test Scenarios -->
+        <div id="preScanGuidanceCard" class="card guidance-card">
+          <div class="guidance-header">
+            <div class="guidance-title-wrap">
+              <span class="guidance-badge">Forensic Readiness</span>
+              <h3 class="guidance-title">Test a Known Threat Vector or Analyze New Message</h3>
+            </div>
+            <span class="guidance-hint">Click any threat scenario below to load and run immediate forensics</span>
+          </div>
+
+          <div class="guidance-scenarios-grid">
+            <!-- Scenario 1: Banking Smishing -->
+            <div class="guidance-scenario-item" role="button" tabindex="0" data-scenario="bank">
+              <div class="scenario-icon-pill icon-danger">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="scenario-content">
+                <div class="scenario-title-row">
+                  <h4 class="scenario-name">Banking Impersonation</h4>
+                  <span class="risk-pill-sm risk-high-pill">High Risk</span>
+                </div>
+                <p class="scenario-desc">Urgent debit card lock lure with an unverified phishing domain link.</p>
+                <div class="scenario-meta">
+                  <span>Indicators: <strong>Credential Lure &bull; Urgent Action</strong></span>
+                  <button type="button" class="btn-scenario-load" data-scenario="bank">Load &rarr;</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scenario 2: Quishing / Delivery Smishing -->
+            <div class="guidance-scenario-item" role="button" tabindex="0" data-scenario="delivery">
+              <div class="scenario-icon-pill icon-warning">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div class="scenario-content">
+                <div class="scenario-title-row">
+                  <h4 class="scenario-name">Postal Delivery Redirection</h4>
+                  <span class="risk-pill-sm risk-high-pill">High Risk</span>
+                </div>
+                <p class="scenario-desc">Unpaid package fee lure directing users to an external payment link.</p>
+                <div class="scenario-meta">
+                  <span>Indicators: <strong>Financial Lure &bull; Shortlink</strong></span>
+                  <button type="button" class="btn-scenario-load" data-scenario="delivery">Load &rarr;</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Scenario 3: Legitimate OTP Verification -->
+            <div class="guidance-scenario-item" role="button" tabindex="0" data-scenario="legit">
+              <div class="scenario-icon-pill icon-safe">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="scenario-content">
+                <div class="scenario-title-row">
+                  <h4 class="scenario-name">Legitimate 2FA OTP Code</h4>
+                  <span class="risk-pill-sm risk-low-pill">Clean / Low</span>
+                </div>
+                <p class="scenario-desc">Standard multi-factor authentication code containing no links or coercive threats.</p>
+                <div class="scenario-meta">
+                  <span>Indicators: <strong>Zero Malicious Indicators &bull; 0.22% FPR</strong></span>
+                  <button type="button" class="btn-scenario-load" data-scenario="legit">Load &rarr;</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forensic Engine Checklist -->
+          <div class="guidance-checklist-bar">
+            <div class="checklist-title">Autonomous Forensic Pipeline Active:</div>
+            <div class="checklist-items">
+              <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> In-Memory PII Stripping</span>
+              <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Calibrated Logistic Regression</span>
+              <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Observable Threat Indicators</span>
+              <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Bedrock / NLP Copilot</span>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Investigation Results Panel -->
+        <div id="resultsCard" class="card results-card hidden" aria-live="polite">
+          <div class="results-header">
+            <div class="result-badge-group">
+              <span id="riskBadge" class="risk-badge risk-high">HIGH RISK</span>
+              <span id="classificationTag" class="classification-tag">SPAM / DECEPTIVE</span>
+            </div>
+            <div class="score-container">
+              <div class="score-label">ML Risk Score</div>
+              <div class="score-value-row">
+                <span id="scoreValue" class="score-number">85.0%</span>
+                <span class="score-bounds">confidence estimate</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress / Risk Meter -->
+          <div class="risk-meter-wrapper">
+            <div class="risk-meter-bar">
+              <div id="riskMeterFill" class="risk-meter-fill fill-high" style="width: 85%;"></div>
+            </div>
+            <div class="risk-meter-scale">
+              <span>0% Low (Clean)</span>
+              <span>35% Moderate</span>
+              <span>70% High</span>
+              <span>100% Critical</span>
+            </div>
+          </div>
+
+          <!-- Plain-English AI Explanation -->
+          <div class="investigation-section">
+            <h3 class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              AI Investigation Assessment
+            </h3>
+            <p id="investigationSummary" class="investigation-text"></p>
+            <div class="provider-tag" id="investigationProvider">Engine: Rule-Based NLP</div>
+          </div>
+
+          <!-- Multi-Modal Forensic Card (QR Code / Quishing / Brand Impersonation) -->
+          <div id="multimodalForensicCard" class="multimodal-forensic-box hidden">
+            <div class="forensic-box-header">
+              <span class="forensic-header-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
+                Multi-Modal Artifact Forensics & Vision
+              </span>
+              <span id="multimodalClassificationBadge" class="forensic-class-badge">QUISHING DETECTED</span>
+            </div>
+
+            <!-- QR Decoded Callout -->
+            <div id="qrForensicRow" class="qr-forensic-row hidden">
+              <div class="qr-forensic-icon">⚠️</div>
+              <div class="qr-forensic-details">
+                <div class="qr-forensic-title">Decoded QR Code Destination (Quishing Risk: <span id="qrRiskLabel" class="qr-risk-high">HIGH</span>)</div>
+                <div class="qr-payload-code" id="qrPayloadCode">http://...</div>
+                <div class="qr-domain-meta">Target Domain: <strong id="qrDomainText">example.com</strong></div>
+              </div>
+            </div>
+
+            <!-- Detected Brands -->
+            <div id="brandsRow" class="brands-row hidden">
+              <span class="brands-label">Impersonated Target(s):</span>
+              <div id="detectedBrandsList" class="brands-pill-group"></div>
+            </div>
+
+            <!-- Document Text Preview -->
+            <div id="docTextRow" class="doc-text-row hidden">
+              <div class="doc-text-header">Document OCR / Extracted Text Stream:</div>
+              <pre id="docTextSnippet" class="doc-text-snippet"></pre>
+            </div>
+          </div>
+
+
+          <!-- Observable Indicators Grid -->
+          <div class="investigation-section">
+            <h3 class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Observable Security Signals
+            </h3>
+            <div id="observableSignsList" class="indicators-list"></div>
+          </div>
+
+          <!-- Evidence vs Assumptions Breakdown -->
+          <div class="investigation-section">
+            <h3 class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Evidence vs. Assumptions Separation
+            </h3>
+            <div class="evidence-grid">
+              <div class="evidence-box">
+                <h4 class="evidence-box-title direct-title">Direct Observable Facts</h4>
+                <ul id="directObservationsList" class="evidence-list"></ul>
+              </div>
+              <div class="evidence-box">
+                <h4 class="evidence-box-title implied-title">Inferred Potential Scenarios</h4>
+                <ul id="potentialImplicationsList" class="evidence-list"></ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommended Next Actions -->
+          <div class="investigation-section">
+            <h3 class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Recommended Safety Actions
+            </h3>
+            <ul id="recommendedActionsList" class="actions-list"></ul>
+          </div>
+
+          <!-- System Limitations & Uncertainty Statement -->
+          <div class="uncertainty-box">
+            <div class="uncertainty-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="uncertainty-content">
+              <strong>Model Certainty Limitations:</strong>
+              <span id="uncertaintyText"></span>
+            </div>
+          </div>
+
+          <!-- User Evaluation / Feedback Widget -->
+          <div class="feedback-footer">
+            <span class="feedback-prompt">Was this investigation analysis accurate?</span>
+            <div class="feedback-buttons">
+              <button type="button" class="btn btn-sm btn-outline-success" id="btnFeedbackHelpful" data-helpful="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                Helpful
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger" id="btnFeedbackIncorrect" data-helpful="false">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>
+                Incorrect / Unhelpful
+              </button>
+            </div>
+            <span id="feedbackStatusMsg" class="feedback-status-msg hidden">Feedback recorded safely.</span>
+          </div>
+
+        </div>
+
+        <!-- Initial Placeholder State -->
+        <div id="resultsPlaceholder" class="card placeholder-card">
+          <div class="placeholder-graphic">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3A506B" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <h3 class="placeholder-title">No Investigation Active</h3>
+          <p class="placeholder-desc">Enter a message above or pick a sample threat scenario to run the statistical ML model and AI explanation engine.</p>
+        </div>
+        </div> <!-- /scanner-main-col -->
+
+        <!-- AI Investigation Assistant & Interactive Copilot Side Panel -->
+        <aside class="copilot-panel card" id="copilotPanel" aria-label="AI Cybersecurity Copilot">
+          <div class="copilot-header">
+            <div class="copilot-avatar-wrap">
+              <img src="/static/img/assistant-avatar.jpg" alt="TrustLens AI Assistant" class="copilot-avatar-img">
+              <span class="copilot-status-dot" title="Copilot Online & Ready"></span>
+            </div>
+            <div class="copilot-title-wrap">
+              <div class="copilot-name-row">
+                <h3 class="copilot-name">TrustLens Copilot</h3>
+                <span id="copilotProviderPill" class="copilot-provider-badge">Rule-Based NLP</span>
+              </div>
+              <p class="copilot-role">Real-Time Cybersecurity Assistant</p>
+            </div>
+          </div>
+
+          <!-- Real Backend Analysis Progress Stepper (Visible during active scan) -->
+          <div id="copilotProgressBox" class="copilot-progress-box hidden" aria-live="polite">
+            <div class="progress-box-header">
+              <span class="progress-box-title">
+                <span class="progress-pulse-ring"></span>
+                Investigation Pipeline
+              </span>
+              <span id="progressTimeElapsed" class="progress-elapsed">Running...</span>
+            </div>
+            <div class="progress-steps-list">
+              <div class="progress-step-item" id="stepSanitize">
+                <div class="step-icon"><span class="step-num">1</span></div>
+                <div class="step-info">
+                  <div class="step-name">Input Isolation & Sanitization</div>
+                  <div class="step-sub">Strip adversarial prompt injections & mask PII</div>
+                </div>
+                <span class="step-status-tag" id="statusStep1">Pending</span>
+              </div>
+              <div class="progress-step-item" id="stepInference">
+                <div class="step-icon"><span class="step-num">2</span></div>
+                <div class="step-info">
+                  <div class="step-name">TF-IDF Vectorization & ML Inference</div>
+                  <div class="step-sub">LogisticRegression statistical spam probability</div>
+                </div>
+                <span class="step-status-tag" id="statusStep2">Pending</span>
+              </div>
+              <div class="progress-step-item" id="stepIndicators">
+                <div class="step-icon"><span class="step-num">3</span></div>
+                <div class="step-info">
+                  <div class="step-name">Observable Indicators Extraction</div>
+                  <div class="step-sub">Detect URLs, shortcodes, urgency & action cues</div>
+                </div>
+                <span class="step-status-tag" id="statusStep3">Pending</span>
+              </div>
+              <div class="progress-step-item" id="stepSynthesis">
+                <div class="step-icon"><span class="step-num">4</span></div>
+                <div class="step-info">
+                  <div class="step-name">Evidence Synthesis & Guidance</div>
+                  <div class="step-sub">Grounded plain-English AI investigation assessment</div>
+                </div>
+                <span class="step-status-tag" id="statusStep4">Pending</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Copilot Dialogue & Q&A Stream -->
+          <div class="copilot-chat-feed" id="copilotChatFeed" role="log" aria-live="polite">
+            <div class="copilot-msg copilot-msg-ai">
+              <div class="msg-avatar-mini">
+                <img src="/static/img/assistant-avatar.jpg" alt="TrustLens AI">
+              </div>
+              <div class="msg-bubble">
+                <div class="msg-sender">TrustLens Copilot</div>
+                <div class="msg-text">
+                  Welcome to TrustLens AI. I am your cybersecurity investigation copilot. Paste an untrusted message or pick a threat scenario above to run the statistical ML model and NLP analyzer, or click any suggested question below.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contextual Suggested Questions Section -->
+          <div class="copilot-suggestions-wrap">
+            <div class="suggestions-header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span class="suggestions-title">Suggested Inquiries</span>
+            </div>
+            <div class="suggestions-chips-group" id="copilotSuggestionsList">
+              <button type="button" class="copilot-chip" data-question="Why is this message suspicious?">
+                Why is this message suspicious?
+              </button>
+              <button type="button" class="copilot-chip" data-question="What evidence supports the prediction?">
+                What evidence supports the prediction?
+              </button>
+              <button type="button" class="copilot-chip" data-question="Which phrases are warning signs?">
+                Which phrases are warning signs?
+              </button>
+              <button type="button" class="copilot-chip" data-question="What should I do next?">
+                What should I do next?
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Question Input Bar -->
+          <div class="copilot-input-bar">
+            <input 
+              type="text" 
+              id="copilotQueryInput" 
+              class="copilot-input" 
+              placeholder="Ask Copilot about this message..." 
+              maxlength="500"
+              aria-label="Ask Copilot a question"
+            >
+            <button type="button" id="btnSendCopilotQuery" class="btn btn-primary btn-sm btn-copilot-send" title="Send question">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+
+        </aside>
+
+      </div>
+    
+      <!-- Compact Footer for Internal Application View -->
+      <footer class="app-footer-compact">
+        <div class="footer-compact-container">
+          <span>&copy; 2026 TrustLens AI &bull; Verifiable Machine Learning &amp; AI Investigation</span>
+          <span class="footer-compact-meta">Zero PII Persistence &bull; Offline Autonomous Fallback</span>
+        </div>
+      </footer>
+</section>
+
+    <!-- TAB 2: INVESTIGATION DASHBOARD -->
+    <section id="dashboardTab" class="tab-pane page-view hidden" aria-labelledby="tabBtnDashboard">
+      
+      <!-- Dashboard Top Header Bar -->
+      <div class="dashboard-header-banner">
+        <div class="dashboard-header-left">
+          <div class="dashboard-status-pill">
+            <span class="status-dot status-ready" id="dashStatusDot"></span>
+            <span id="dashStatusText">Telemetry Engine Operational</span>
+          </div>
+          <h2 class="dashboard-heading">Investigation Operations Dashboard</h2>
+          <p class="dashboard-subheading">Aggregated threat intelligence, calibrated risk telemetry, and recent audit records from your security investigations.</p>
+        </div>
+        <div class="dashboard-header-right">
+          <button type="button" class="btn btn-outline btn-sm" id="btnRefreshDashboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh Telemetry
+          </button>
+          <button type="button" class="btn btn-primary btn-header-cta" id="btnDashboardOpenScanner" data-route="scanner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Analyze Message
+          </button>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        
+        <!-- Live KPI Metrics -->
+        <div class="kpi-card">
+          <div class="kpi-label">Total Messages Investigated</div>
+          <div class="kpi-value" id="kpiTotalScans">0</div>
+          <div class="kpi-subtext">Persisted in personal audit ledger</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Suspicious / Deceptive Flagged</div>
+          <div class="kpi-value text-danger" id="kpiSuspiciousScans">0</div>
+          <div class="kpi-subtext" id="kpiSuspiciousRate">0% detection rate</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Legitimate / Clean Validated</div>
+          <div class="kpi-value text-success" id="kpiLegitScans">0</div>
+          <div class="kpi-subtext" id="kpiLegitRate">0% clean rate</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-label">Mean Calculated Risk</div>
+          <div class="kpi-value text-info" id="kpiAvgRisk">0.0%</div>
+          <div class="kpi-subtext">Across all personal inquiries</div>
+        </div>
+
+      </div>
+
+      <!-- Live Risk Distribution Bar -->
+      <div class="card distribution-card mt-4">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Live Risk Level Distribution</h3>
+            <p class="card-description">Categorization of recorded messages by calibrated probability tier.</p>
+          </div>
+        </div>
+
+        <div class="stacked-bar-container">
+          <div class="stacked-bar">
+            <div id="barLow" class="bar-segment segment-low" style="width: 33.3%;"></div>
+            <div id="barMedium" class="bar-segment segment-medium" style="width: 33.3%;"></div>
+            <div id="barHigh" class="bar-segment segment-high" style="width: 33.4%;"></div>
+          </div>
+          <div class="stacked-bar-legend">
+            <div class="legend-item"><span class="legend-dot dot-low"></span> Low Risk (<span id="countLow">0</span>)</div>
+            <div class="legend-item"><span class="legend-dot dot-medium"></span> Moderate Risk (<span id="countMedium">0</span>)</div>
+            <div class="legend-item"><span class="legend-dot dot-high"></span> High Risk (<span id="countHigh">0</span>)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Investigations Table -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Recent Investigation Stream</h3>
+            <p class="card-description">Audit trail of the most recent message inquiries.</p>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" id="btnDashboardViewAllHistory" data-route="history">
+            View All Scans &rarr;
+          </button>
+        </div>
+
+        <div id="dashboardEmptyState" class="dashboard-empty-state hidden">
+          <div class="empty-icon-shield">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <h4 class="empty-title">No Investigation Records Found</h4>
+          <p class="empty-desc">You haven't scanned any suspicious communications yet. Launch the analyzer to evaluate your first potential threat.</p>
+          <button type="button" class="btn btn-primary btn-sm" id="btnDashboardEmptyScan" data-route="scanner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Launch Message Scanner
+          </button>
+        </div>
+
+        <div class="table-responsive" id="dashboardTableWrap">
+          <table class="data-table" id="dashboardRecentTable">
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Message Snippet</th>
+                <th>Classification</th>
+                <th>Risk Level</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardRecentTbody">
+              <tr>
+                <td colspan="6" class="text-center text-muted">No investigation records yet. Run your first analysis in the Scanner.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    
+      <!-- Compact Footer for Internal Application View -->
+      <footer class="app-footer-compact">
+        <div class="footer-compact-container">
+          <span>&copy; 2026 TrustLens AI &bull; Verifiable Machine Learning &amp; AI Investigation</span>
+          <span class="footer-compact-meta">Zero PII Persistence &bull; Offline Autonomous Fallback</span>
+        </div>
+      </footer>
+</section>
+
+    <!-- TAB 3: AUDIT & SCAN HISTORY -->
+    <section id="historyTab" class="tab-pane page-view hidden" aria-labelledby="tabBtnHistory">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Investigation Audit Ledger</h2>
+            <p class="card-description">Inspect, search, and manage previously analyzed communications. Sensitive data is automatically redacted.</p>
+          </div>
+          <div class="history-header-actions">
+            <button type="button" class="btn btn-danger btn-sm" id="btnClearAllHistory">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Clear All History
+            </button>
+          </div>
+        </div>
+
+        <!-- History Scope Selector -->
+        <div class="history-scope-bar" id="historyScopeBar" role="tablist">
+          <button type="button" class="scope-pill-btn active" id="btnScopeGuest" role="tab" aria-selected="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+            Public Demo Ledger
+          </button>
+          <button type="button" class="scope-pill-btn" id="btnScopePersonal" role="tab" aria-selected="false">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            My Private Scans
+          </button>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-toolbar">
+          <div class="filter-group">
+            <label for="historyRiskFilter" class="filter-label">Filter by Risk:</label>
+            <select id="historyRiskFilter" class="select-sm">
+              <option value="">All Tiers</option>
+              <option value="HIGH">High Risk</option>
+              <option value="MEDIUM">Medium Risk</option>
+              <option value="LOW">Low Risk</option>
+            </select>
+          </div>
+
+          <div class="filter-group search-group">
+            <label for="historySearchInput" class="filter-label">Search Preview:</label>
+            <input type="text" id="historySearchInput" class="input-sm" placeholder="e.g. bank, chase, parcel...">
+          </div>
+
+          <button type="button" id="btnApplyHistoryFilter" class="btn btn-secondary btn-sm">Filter</button>
+          <button type="button" id="btnResetHistoryFilter" class="btn btn-secondary btn-sm">Reset</button>
+        </div>
+
+        <!-- History Records Table -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date / Time</th>
+                <th>Sanitized Preview</th>
+                <th>Classification</th>
+                <th>Risk Tier</th>
+                <th>Score</th>
+                <th>Model</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyTbody">
+              <tr>
+                <td colspan="7" class="text-center text-muted">Loading audit records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span id="historyRecordCount">0 records found</span>
+        </div>
+      </div>
+    
+      <!-- Compact Footer for Internal Application View -->
+      <footer class="app-footer-compact">
+        <div class="footer-compact-container">
+          <span>&copy; 2026 TrustLens AI &bull; Verifiable Machine Learning &amp; AI Investigation</span>
+          <span class="footer-compact-meta">Zero PII Persistence &bull; Offline Autonomous Fallback</span>
+        </div>
+      </footer>
+</section>
+
+    <!-- TAB 4: THREAT SAMPLES LIBRARY -->
+    <section id="samplesTab" class="tab-pane page-view hidden" aria-labelledby="tabBtnSamples">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Threat Scenario & Benchmark Samples</h2>
+            <p class="card-description">Pre-configured threat templates representing prevalent real-world social engineering and legitimate message categories.</p>
+          </div>
+        </div>
+        <div class="samples-grid" id="samplesGallery"></div>
+      </div>
+    
+      <!-- Compact Footer for Internal Application View -->
+      <footer class="app-footer-compact">
+        <div class="footer-compact-container">
+          <span>&copy; 2026 TrustLens AI &bull; Verifiable Machine Learning &amp; AI Investigation</span>
+          <span class="footer-compact-meta">Zero PII Persistence &bull; Offline Autonomous Fallback</span>
+        </div>
+      </footer>
+</section>
+
+    <!-- TAB 5: MODEL & VERIFICATION ARCHITECTURE -->
+    <section id="architectureTab" class="tab-pane page-view hidden" aria-labelledby="tabBtnArchitecture">
+      <div class="architecture-layout">
+        
+        <!-- Active Model Evaluation Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Selected Model Performance & Holdout Evaluation</h2>
+            <span class="badge-verified">Verified on Holdout Test Data</span>
+          </div>
+
+          <div class="metrics-summary-grid">
+            <div class="metric-box">
+              <div class="metric-name">Holdout F1-Score</div>
+              <div class="metric-digit" id="archF1">0.9569</div>
+              <div class="metric-caption">Harmonic mean on spam class</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-name">Holdout Precision</div>
+              <div class="metric-digit" id="archPrecision">0.9839</div>
+              <div class="metric-caption">Low false positive rate</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-name">Holdout Recall</div>
+              <div class="metric-digit" id="archRecall">0.9313</div>
+              <div class="metric-caption">Fraud catch rate</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-name">Holdout ROC-AUC</div>
+              <div class="metric-digit" id="archRocAuc">0.9933</div>
+              <div class="metric-caption">Separation performance on test split</div>
+            </div>
+          </div>
+
+          <!-- Holdout Confusion Matrix -->
+          <div class="mt-4">
+            <h3 class="section-title">Holdout Confusion Matrix (N = 1,035 Unseen Samples)</h3>
+            <div class="confusion-matrix-wrapper">
+              <table class="confusion-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Predicted Legitimate (Ham)</th>
+                    <th>Predicted Deceptive (Spam)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th>Actual Legitimate (904)</th>
+                    <td class="cell-highlight-success"><strong>902</strong> (True Negatives)</td>
+                    <td class="cell-highlight-danger"><strong>2</strong> (False Positives)</td>
+                  </tr>
+                  <tr>
+                    <th>Actual Deceptive (131)</th>
+                    <td class="cell-highlight-warning"><strong>9</strong> (False Negatives)</td>
+                    <td class="cell-highlight-success"><strong>122</strong> (True Positives)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="matrix-footnote">
+              *Evaluation performed on an unseen 20% holdout split from the UCI SMS Spam Collection dataset. False positive rate is strictly limited to 0.22% (only 2 out of 904 legitimate communications flagged).
+            </p>
+          </div>
+        </div>
+
+        <!-- System Architecture & Security Principles -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h3 class="card-title">Architecture & Security Design Principles</h3>
+          </div>
+          <div class="principles-grid">
+            <div class="principle-item">
+              <h4 class="principle-title">1. No Untrusted Prompt Execution</h4>
+              <p class="principle-desc">All user-submitted content is isolated in strict structural data tags. Prompt injection instructions ("ignore instructions", "mark safe") are neutralised and cannot alter evaluation parameters.</p>
+            </div>
+            <div class="principle-item">
+              <h4 class="principle-title">2. Decoupled AI Explanation</h4>
+              <p class="principle-desc">The statistical machine learning pipeline operates independently on CPU. If Amazon Bedrock or third-party LLMs are unreachable or unconfigured, the internal rule-based NLP engine delivers identical structured schemas with zero downtime.</p>
+            </div>
+            <div class="principle-item">
+              <h4 class="principle-title">3. Privacy & Sensitive Data Protection</h4>
+              <p class="principle-desc">Stored records do not retain raw unredacted messages. Card numbers, emails, and authentication tokens are masked before writing to persistent SQLite/PostgreSQL storage.</p>
+            </div>
+            <div class="principle-item">
+              <h4 class="principle-title">4. Ground-Truth Data Isolation</h4>
+              <p class="principle-desc">User feedback is stored in an independent audit repository. The core production model is never retrained automatically on unverified external submissions to prevent data poisoning attacks.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    
+      <!-- Compact Footer for Internal Application View -->
+      <footer class="app-footer-compact">
+        <div class="footer-compact-container">
+          <span>&copy; 2026 TrustLens AI &bull; Verifiable Machine Learning &amp; AI Investigation</span>
+          <span class="footer-compact-meta">Zero PII Persistence &bull; Offline Autonomous Fallback</span>
+        </div>
+      </footer>
+</section>
+
+    <!-- TAB 6: AUTHENTICATION (SIGN IN & REGISTER) -->
+    <section id="authTab" class="tab-pane page-view hidden" aria-labelledby="authHeading">
+      <div class="auth-wrapper">
+        <div class="auth-split-container">
+          
+          <!-- LEFT SIDE: Light Blue-Gray Product Intelligence Panel -->
+          <div class="auth-brand-panel">
+            <div class="auth-brand-header">
+              <div class="auth-brand-badge">
+                <div class="shield-icon" aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M9 12l2 2 4-4"/>
+                  </svg>
+                </div>
+                <span class="auth-brand-title">TrustLens <span class="badge-ai">AI</span></span>
+              </div>
+              <span class="auth-workspace-badge">Security Workspace</span>
+            </div>
+
+            <div class="auth-brand-body">
+              <h2 class="auth-panel-headline">Safer messages.<br>Smarter decisions.</h2>
+              <p class="auth-panel-desc">
+                Enterprise message threat detection and fraud investigation. Validate suspicious communications, surface deceptive indicators, and inspect verifiable machine learning evidence.
+              </p>
+
+              <!-- Three Concise Feature Points -->
+              <div class="auth-features-list">
+                <div class="auth-feature-item">
+                  <div class="feature-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <div class="feature-text">
+                    <strong>Intelligent threat detection</strong>
+                    <span>High-precision statistical ML calibrated for deceptive text, phishing, and scam patterns.</span>
+                  </div>
+                </div>
+
+                <div class="auth-feature-item">
+                  <div class="feature-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                  </div>
+                  <div class="feature-text">
+                    <strong>Explainable risk analysis</strong>
+                    <span>Observable indicators, direct evidence, and plain-English threat summaries.</span>
+                  </div>
+                </div>
+
+                <div class="auth-feature-item">
+                  <div class="feature-icon" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </div>
+                  <div class="feature-text">
+                    <strong>Secure investigation history</strong>
+                    <span>Private audit ledger with automated PII masking and cryptographic Argon2id protection.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Product-Specific Visual Mockup -->
+              <div class="auth-preview-mockup" aria-hidden="true">
+                <div class="preview-mockup-header">
+                  <div class="preview-mockup-label">
+                    <span class="preview-pulse-dot"></span>
+                    <span>Threat Analysis Sample</span>
+                  </div>
+                  <span class="risk-badge risk-high btn-sm">HIGH RISK &bull; 84%</span>
+                </div>
+                <div class="preview-mockup-msg">
+                  &ldquo;URGENT: Your account access has been limited. Verify identity at http://secure-login.xyz to restore access.&rdquo;
+                </div>
+                <div class="preview-mockup-indicators">
+                  <span class="preview-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg> Unverified URL</span>
+                  <span class="preview-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Cognitive Urgency</span>
+                  <span class="preview-pill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/></svg> Credential Lure</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- RIGHT SIDE: Compact Authentication Form Card -->
+          <div class="auth-form-card">
+            
+            <!-- Compact Segmented Switcher -->
+            <div class="auth-segmented-switch" role="tablist" aria-label="Authentication Type">
+              <button type="button" class="auth-switch-btn active" id="tabBtnSignIn" role="tab" aria-selected="true">
+                Log In
+              </button>
+              <button type="button" class="auth-switch-btn" id="tabBtnSignUp" role="tab" aria-selected="false">
+                Create Account
+              </button>
+            </div>
+
+            <!-- Feedback Alert Banner -->
+            <div id="authAlertBanner" class="auth-alert hidden" role="alert" aria-live="polite">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span id="authAlertText"></span>
+            </div>
+
+            <!-- FORM A: LOG IN -->
+            <form id="formLogin" class="auth-form" novalidate>
+              <div class="auth-form-header">
+                <h3 class="auth-form-title" id="authHeading">Welcome back.</h3>
+                <p class="auth-form-subtitle" id="authSubheading">Sign in to continue to your security workspace.</p>
+              </div>
+
+              <div class="form-group">
+                <label for="loginEmail" class="form-label">Email address</label>
+                <input 
+                  type="email" 
+                  id="loginEmail" 
+                  class="form-input" 
+                  placeholder="analyst@organization.com" 
+                  required 
+                  autocomplete="email"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="loginPassword" class="form-label">Password</label>
+                <div class="password-input-wrap">
+                  <input 
+                    type="password" 
+                    id="loginPassword" 
+                    class="form-input" 
+                    placeholder="Enter your account password" 
+                    required 
+                    autocomplete="current-password"
+                  >
+                  <button type="button" class="password-toggle-btn" id="toggleLoginPassword" aria-label="Toggle password visibility">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-auth-submit" id="btnLoginSubmit">
+                <span id="loginBtnText">Sign In</span>
+                <span id="loginSpinner" class="btn-spinner hidden" aria-hidden="true"></span>
+              </button>
+
+              <div class="auth-switch-prompt">
+                <span>New to TrustLens AI?</span>
+                <button type="button" class="auth-link" id="linkSwitchToSignUp">Create an account</button>
+              </div>
+            </form>
+
+            <!-- FORM B: CREATE ACCOUNT -->
+            <form id="formRegister" class="auth-form hidden" novalidate>
+              <div class="auth-form-header">
+                <h3 class="auth-form-title">Create your account.</h3>
+                <p class="auth-form-subtitle">Set up your workspace for smarter investigations.</p>
+              </div>
+
+              <div class="form-group">
+                <label for="regFullName" class="form-label">Full name</label>
+                <input 
+                  type="text" 
+                  id="regFullName" 
+                  class="form-input" 
+                  placeholder="e.g. Alex Morgan" 
+                  minlength="2" 
+                  required 
+                  autocomplete="name"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="regEmail" class="form-label">Email address</label>
+                <input 
+                  type="email" 
+                  id="regEmail" 
+                  class="form-input" 
+                  placeholder="analyst@organization.com" 
+                  required 
+                  autocomplete="email"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="regPassword" class="form-label">Password</label>
+                <div class="password-input-wrap">
+                  <input 
+                    type="password" 
+                    id="regPassword" 
+                    class="form-input" 
+                    placeholder="Create a strong password" 
+                    minlength="8" 
+                    required 
+                    autocomplete="new-password"
+                  >
+                  <button type="button" class="password-toggle-btn" id="toggleRegPassword" aria-label="Toggle password visibility">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <span class="password-hint">Must contain at least 8 characters with letters and numbers.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="regConfirmPassword" class="form-label">Confirm password</label>
+                <div class="password-input-wrap">
+                  <input 
+                    type="password" 
+                    id="regConfirmPassword" 
+                    class="form-input" 
+                    placeholder="Confirm password" 
+                    minlength="8" 
+                    required 
+                    autocomplete="new-password"
+                  >
+                  <button type="button" class="password-toggle-btn" id="toggleRegConfirmPassword" aria-label="Toggle confirm password visibility">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-auth-submit" id="btnRegisterSubmit">
+                <span id="regBtnText">Create Account</span>
+                <span id="regSpinner" class="btn-spinner hidden" aria-hidden="true"></span>
+              </button>
+
+              <div class="auth-switch-prompt">
+                <span>Already have an account?</span>
+                <button type="button" class="auth-link" id="linkSwitchToSignIn">Sign in</button>
+              </div>
+            </form>
+
+            <!-- Privacy and Security Assurance Footer -->
+            <div class="auth-security-footer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Argon2id hashing &bull; Zero plaintext PII &bull; HttpOnly session security</span>
+            </div>
+
+          </div> <!-- /auth-form-card -->
+
+        </div> <!-- /auth-split-container -->
+      </div> <!-- /auth-wrapper -->
+
+      <footer class="app-footer-compact">
+        <div class="footer-compact-container">
+          <span>&copy; 2026 TrustLens AI &bull; Verifiable Machine Learning &amp; AI Investigation</span>
+          <span class="footer-compact-meta">Zero PII Persistence &bull; Server-Enforced Access Control</span>
+        </div>
+      </footer>
+    </section>
+
+    <!-- TAB 7: USER ACCOUNT & PERSONAL AUDIT DASHBOARD -->
+    <section id="accountTab" class="tab-pane page-view hidden" aria-labelledby="accountHeading">
+      <div class="account-layout">
+        <div class="account-card">
+          
+          <div class="account-profile-header">
+            <div class="account-avatar-large" id="accountAvatarLarge">U</div>
+            <div class="account-info">
+              <h2 class="account-name" id="accountProfileName">User Name</h2>
+              <div class="account-email" id="accountProfileEmail">user@example.com</div>
+              <div class="account-badges">
+                <span class="account-badge-sec">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  Argon2id Salted Protection
+                </span>
+                <span class="account-badge-sec">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  HttpOnly Session
+                </span>
+                <span class="account-badge-sec">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  CSRF Protected
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="account-stats-grid">
+            <div class="account-stat-box">
+              <div class="account-stat-label">Personal Scans</div>
+              <div class="account-stat-val" id="accountScanCount">0</div>
+              <div class="account-stat-sub">Linked strictly to this account</div>
+            </div>
+            <div class="account-stat-box">
+              <div class="account-stat-label">Member Since</div>
+              <div class="account-stat-val" style="font-size: 1.15rem;" id="accountMemberSince">Recent</div>
+              <div class="account-stat-sub">Account creation date</div>
+            </div>
+            <div class="account-stat-box">
+              <div class="account-stat-label">Access Level</div>
+              <div class="account-stat-val" style="font-size: 1.15rem; color: var(--primary-blue);">Investigator</div>
+              <div class="account-stat-sub">Standard Tier &bull; Private Audit</div>
+            </div>
+          </div>
+
+          <div class="account-actions-row">
+            <button type="button" class="btn btn-primary" id="btnAccountViewScans">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              View My Private Scan History
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnAccountNewScan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              New Message Scan
+            </button>
+            <button type="button" class="btn btn-outline-danger" id="btnAccountLogout">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Log Out
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <footer class="app-footer-compact">
+        <div class="footer-compact-container">
+          <span>&copy; 2026 TrustLens AI &bull; Verifiable Machine Learning &amp; AI Investigation</span>
+          <span class="footer-compact-meta">Zero PII Persistence &bull; Offline Autonomous Fallback</span>
+        </div>
+      </footer>
+    </section>
+
+  </main>
+
+  <!-- Modal for Detailed Scan Inspection -->
+  <div id="detailModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Investigation Audit Detail</h3>
+        <button type="button" class="btn-close" id="btnCloseModal" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBodyContent">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnModalDismiss">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Alexa+ MCP Tool Schema Inspection -->
+  <div id="modalMcpTools" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="mcpModalTitle">
+    <div class="modal-card modal-lg" style="max-width: 760px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="mcpModalTitle" class="modal-title">Alexa+ Agent Skill MCP Tool Specifications</h3>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">Model Context Protocol (MCP) tool schema invoked during conversational turns</p>
+        </div>
+        <button type="button" class="btn-close" id="btnCloseMcpModal" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.84rem;color:var(--text-secondary);margin-bottom:12px;">
+          When an evaluator asks Alexa+ to investigate a message or follow up on threat evidence, the simulated assistant dispatches the request to these self-hosted MCP tools, which call the TrustLens AI machine learning pipeline:
+        </p>
+        <pre class="alexa-modal-pre" id="mcpToolsCodeBlock">Loading MCP Tool Definitions...</pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnDismissMcpModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js?v=2.2"></script>
+</body>
+</html>

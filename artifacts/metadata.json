@@ -1,0 +1,41 @@
+{
+  "model_version": "1.0.0",
+  "selected_model": "LogisticRegression_Baseline",
+  "trained_at": "2026-10-18T19:21:33.844626+00:00",
+  "dataset": {
+    "name": "SMS Spam Collection (UCI ID 228)",
+    "license": "CC BY 4.0",
+    "total_raw_rows": 5574,
+    "deduplicated_rows": 5171,
+    "train_rows": 4136,
+    "test_rows": 1035,
+    "class_distribution": {
+      "ham": 4518,
+      "spam": 653
+    }
+  },
+  "metrics": {
+    "model_name": "LogisticRegression_Baseline",
+    "cv_summary": {
+      "cv_mean_precision": 0.9707577659726756,
+      "cv_mean_recall": 0.9482234432234431,
+      "cv_mean_f1": 0.9591651256199831,
+      "cv_mean_roc_auc": 0.9924277135938496
+    },
+    "test_accuracy": 0.9894,
+    "test_precision": 0.9839,
+    "test_recall": 0.9313,
+    "test_f1": 0.9569,
+    "test_roc_auc": 0.9933,
+    "confusion_matrix": {
+      "true_negatives": 902,
+      "false_positives": 2,
+      "false_negatives": 9,
+      "true_positives": 122
+    },
+    "false_positive_rate": 0.0022,
+    "false_negative_rate": 0.0687
+  },
+  "vocabulary_size": 5000,
+  "tradeoff_rationale": "Selected LogisticRegression_Baseline based on its superior harmonic mean of precision and recall (F1: 0.9569) and low false negative rate (6.9%), ensuring deceptive messages are caught while maintaining high legitimacy confidence (FP=2)."
+}

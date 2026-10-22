@@ -1,0 +1,12 @@
+{
+  "selected_model": "LogisticRegression_Baseline",
+  "matrix": {
+    "true_negatives": 902,
+    "false_positives": 2,
+    "false_negatives": 9,
+    "true_positives": 122
+  },
+  "test_sample_size": 1035,
+  "ham_samples": 904,
+  "spam_samples": 131
+}
