@@ -96,3 +96,61 @@ def test_alexa_simulate_reset(client):
     assert res.status_code == 200
     data = res.json()
     assert "reset" in data["conversational_response"].lower()
+
+def test_alexa_mcp_tool_execution_inspect_message(client):
+    payload = {
+        "tool_name": "trustlens_inspect_message",
+        "arguments": {
+            "message_text": "CHASE ALERT: Your account has been temporarily locked due to unusual debit activity. Verify your identity immediately to prevent suspension: http://chase-security-verify.net/login"
+        }
+    }
+    res = client.post("/api/v1/alexa/tools/execute", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert data["tool"] == "trustlens_inspect_message"
+    out = data["output"]
+    assert out["classification"] == "SPAM"
+    assert out["risk_level"] == "HIGH"
+    assert out["risk_score"] > 0.8
+    assert len(out["warning_signs"]) > 0
+
+def test_alexa_mcp_tool_execution_explain_threat(client):
+    payload = {
+        "tool_name": "trustlens_explain_threat",
+        "arguments": {
+            "question": "Why is this message suspicious?",
+            "message_text": "CHASE ALERT: Your account has been temporarily locked. Verify at http://chase-security-verify.net/login"
+        }
+    }
+    res = client.post("/api/v1/alexa/tools/execute", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert data["tool"] == "trustlens_explain_threat"
+    assert "SPAM" in data["output"]["answer"] or "risk" in data["output"]["answer"].lower()
+
+def test_alexa_mcp_tool_execution_safety_actions(client):
+    payload = {
+        "tool_name": "trustlens_get_safety_actions",
+        "arguments": {
+            "threat_level": "HIGH",
+            "threat_indicators": ["http://chase-security-verify.net/login", "immediately"]
+        }
+    }
+    res = client.post("/api/v1/alexa/tools/execute", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert data["tool"] == "trustlens_get_safety_actions"
+    assert len(data["output"]["recommended_actions"]) >= 3
+
+def test_alexa_mcp_tool_execution_unknown_tool(client):
+    payload = {
+        "tool_name": "non_existent_tool",
+        "arguments": {}
+    }
+    res = client.post("/api/v1/alexa/tools/execute", json=payload)
+    assert res.status_code == 400
+    assert "Unknown MCP tool" in res.json()["detail"]
+

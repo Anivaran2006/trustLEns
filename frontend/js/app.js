@@ -2600,7 +2600,7 @@
             <div class="alexa-risk-meter-wrap">
               <div class="alexa-meter-labels">
                 <span>0% (Legitimate)</span>
-                <span>Calibrated Risk: ${score}%</span>
+                <span>Evaluated Risk: ${score}%</span>
                 <span>100% (High Fraud)</span>
               </div>
               <div class="alexa-meter-track">

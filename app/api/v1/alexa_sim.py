@@ -6,7 +6,7 @@ Provides conversational endpoints, MCP tool declarations, and preset threat scen
 
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -16,7 +16,7 @@ from app.core.auth import get_optional_current_user
 from app.core.security import limiter, sanitize_and_encode_input
 from app.core.config import settings
 from app.alexa_simulation.service import alexa_simulator
-from app.alexa_simulation.tools import get_mcp_tool_definitions
+from app.alexa_simulation.tools import get_mcp_tool_definitions, execute_mcp_tool
 
 router = APIRouter()
 
@@ -35,6 +35,15 @@ class AlexaTurnResponse(BaseModel):
     context_grounded: bool
     disclaimer: str
     scan_id: Optional[str] = None
+
+class McpToolExecutionRequest(BaseModel):
+    tool_name: str = Field(..., description="The name of the MCP tool to execute")
+    arguments: Dict[str, Any] = Field(default_factory=dict, description="Arguments for the tool")
+
+class McpToolExecutionResponse(BaseModel):
+    tool: str
+    status: str
+    output: Dict[str, Any]
 
 @router.get(
     "/alexa/presets",
@@ -56,6 +65,34 @@ def get_alexa_mcp_tools():
         "runtime_target": "Alexa+ (Simulated Experience)",
         "tools": get_mcp_tool_definitions()
     }
+
+@router.post(
+    "/alexa/tools/execute",
+    response_model=McpToolExecutionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Execute an MCP tool directly against the TrustLens AI backend"
+)
+@limiter.limit(settings.RATE_LIMIT_PER_MINUTE)
+def execute_mcp_tool_endpoint(
+    payload: McpToolExecutionRequest,
+    request: Request
+):
+    """
+    Directly executes an MCP tool call (e.g. trustlens_inspect_message, trustlens_explain_threat,
+    trustlens_get_safety_actions) and returns verified, grounded backend execution output.
+    """
+    try:
+        res = execute_mcp_tool(payload.tool_name, payload.arguments)
+        return McpToolExecutionResponse(
+            tool=res["tool"],
+            status=res["status"],
+            output=res["output"]
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Tool execution failed: {str(e)}")
+
 
 @router.post(
     "/alexa/simulate",
@@ -93,6 +130,12 @@ def simulate_alexa_turn(
                     expl = json.loads(record.explanation_json)
                 except Exception:
                     pass
+            indicators = {}
+            if record.indicators_json:
+                try:
+                    indicators = json.loads(record.indicators_json)
+                except Exception:
+                    pass
             active_scan = {
                 "scan_id": record.id,
                 "message_text": record.message_preview,
@@ -102,7 +145,8 @@ def simulate_alexa_turn(
                     "risk_level": record.risk_level,
                     "is_suspicious": record.is_suspicious,
                     "model_name": record.model_name,
-                    "model_version": record.model_version
+                    "model_version": record.model_version,
+                    "observable_indicators": indicators
                 },
                 "investigation": expl,
                 "scan_result": {
@@ -111,6 +155,7 @@ def simulate_alexa_turn(
                     "risk_score": record.risk_score,
                     "risk_percentage": f"{record.risk_score * 100:.1f}%",
                     "risk_level": record.risk_level,
+                    "observable_indicators": indicators,
                     "summary": expl.get("summary", ""),
                     "warning_signs": expl.get("observable_warning_signs", []),
                     "direct_observations": expl.get("evidence_vs_assumptions", {}).get("direct_observations", []),

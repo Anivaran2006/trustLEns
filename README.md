@@ -3,8 +3,8 @@
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.14-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.5+-F7931E.svg)](https://scikit-learn.org/)
-[![Tests](https://img.shields.io/badge/Tests-46%20Passed-brightgreen.svg)]()
-[![License](https://img.shields.io/badge/License-CC%20BY%204.0%20%2F%20MIT-lightgrey.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-50%20Passed-brightgreen.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > **TrustLens AI** is an enterprise-grade message investigation system designed to detect fraudulent, phishing, and deceptive communications (SMS smishing, banking impersonation, delivery scams, lottery fraud). It unites a genuinely trained scikit-learn machine learning pipeline, evidence-based NLP feature extraction, an AI investigation agent with prompt-injection defense, persistent privacy-preserving audit logging, and a responsive cybersecurity web interface.
 
@@ -282,8 +282,8 @@ curl http://localhost:8000/health
 ### Step-by-Step Setup
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-username/trustlens-ai.git
-cd trustlens-ai
+git clone https://github.com/Anivaran2006/trustLEns.git
+cd trustLEns
 
 # 2. Install dependencies
 pip install -r requirements.txt
@@ -301,4 +301,11 @@ pytest -v
 python scripts/run_server.py
 ```
 
-Open your browser at **`http://127.0.0.1:8000`** to access the TrustLens AI investigation console.
+Open your browser at **`http://127.0.0.1:8000`** (or **`http://127.0.0.1:8000/#alexa`** for the Alexa+ Simulated Experience).
+
+---
+
+## 12. License & Attribution
+
+- **Codebase License**: Licensed under the **[MIT License](LICENSE)** &copy; 2026 Anivaran Dubey.
+- **Dataset Attribution**: The SMS Spam Collection dataset is sourced from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) (Creators: Tiago A. Almeida and Jose Maria Gomez Hidalgo), licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).

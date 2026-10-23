@@ -161,7 +161,7 @@
               AI-Assisted Suspicious Message & Fraud Analysis
             </h1>
             <p class="hero-lead">
-              TrustLens AI analyzes deceptive SMS smishing, banking impersonation, and fraudulent invoices using a calibrated scikit-learn machine learning classifier paired with observable threat indicator extraction and an interactive AI copilot.
+              TrustLens AI analyzes deceptive SMS smishing, banking impersonation, and fraudulent invoices using a trained scikit-learn machine learning classifier paired with observable threat indicator extraction and an interactive AI copilot.
             </p>
             <div class="hero-cta-group">
               <button type="button" class="btn btn-alexa btn-lg" id="heroBtnAlexa" data-route="alexa">
@@ -305,7 +305,7 @@
               </div>
               <ul class="ps-list">
                 <li>
-                  <strong>Empirically Trained ML Classifier:</strong> Scikit-learn Logistic Regression trained on 5,171 deduplicated messages computes calibrated statistical probabilities.
+                  <strong>Empirically Trained ML Classifier:</strong> Scikit-learn Logistic Regression trained on 5,171 deduplicated messages computes statistical probabilities.
                 </li>
                 <li>
                   <strong>Deterministic Evidence Extraction:</strong> Explicit extraction of domains, shortcodes, and financial claims prevents subjective guesswork.
@@ -365,7 +365,7 @@
               <div class="step-card">
                 <div class="step-badge">Stage 3: ML Inference</div>
                 <h4 class="step-title">Trained Model Scoring</h4>
-                <p class="step-desc">Logistic Regression evaluates sublinear TF-IDF n-grams to output a calibrated probability $P(\text{deceptive} \mid x)$ without hallucination.</p>
+                <p class="step-desc">Logistic Regression evaluates sublinear TF-IDF n-grams to output a statistical probability $P(\text{deceptive} \mid x)$ without hallucination.</p>
               </div>
             </div>
 
@@ -497,8 +497,8 @@
             </div>
 
             <div class="distinction-card">
-              <div class="distinction-badge">2. Calibrated Output</div>
-              <h4 class="distinction-title">Calibrated Risk Scores</h4>
+              <div class="distinction-badge">2. Statistical Output</div>
+              <h4 class="distinction-title">Statistical Risk Scores</h4>
               <p class="distinction-desc">
                 Posterior probability $P(\text{deceptive} \mid x)$ mapped directly into defensible risk tiers: Low (<35%), Medium (35-65%), and High (>65%).
               </p>
@@ -659,7 +659,7 @@
             <span class="footer-brand-text">TrustLens <span class="badge-ai-sm">AI</span></span>
           </div>
           <p class="footer-desc">
-            An open, verifiable AI investigation platform for analyzing suspicious communications, smishing, and deceptive documents using calibrated machine learning and structured evidence.
+            An open, verifiable AI investigation platform for analyzing suspicious communications, smishing, and deceptive documents using trained statistical machine learning and structured evidence.
           </p>
           <div class="footer-badges">
             <span class="footer-tech-pill">Python 3.10+</span>
@@ -1084,7 +1084,7 @@
             <div class="checklist-title">Autonomous Forensic Pipeline Active:</div>
             <div class="checklist-items">
               <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> In-Memory PII Stripping</span>
-              <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Calibrated Logistic Regression</span>
+              <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Trained Logistic Regression</span>
               <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Observable Threat Indicators</span>
               <span class="chk-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Bedrock / NLP Copilot</span>
             </div>
@@ -1381,7 +1381,7 @@
             <span id="dashStatusText">Telemetry Engine Operational</span>
           </div>
           <h2 class="dashboard-heading">Investigation Operations Dashboard</h2>
-          <p class="dashboard-subheading">Aggregated threat intelligence, calibrated risk telemetry, and recent audit records from your security investigations.</p>
+          <p class="dashboard-subheading">Aggregated threat intelligence, evaluated risk telemetry, and recent audit records from your security investigations.</p>
         </div>
         <div class="dashboard-header-right">
           <button type="button" class="btn btn-outline btn-sm" id="btnRefreshDashboard">
@@ -1429,7 +1429,7 @@
         <div class="card-header">
           <div>
             <h3 class="card-title">Live Risk Level Distribution</h3>
-            <p class="card-description">Categorization of recorded messages by calibrated probability tier.</p>
+            <p class="card-description">Categorization of recorded messages by evaluated probability tier.</p>
           </div>
         </div>
 
@@ -1747,7 +1747,7 @@
                   </div>
                   <div class="feature-text">
                     <strong>Intelligent threat detection</strong>
-                    <span>High-precision statistical ML calibrated for deceptive text, phishing, and scam patterns.</span>
+                    <span>High-precision statistical ML trained for deceptive text, phishing, and scam patterns.</span>
                   </div>
                 </div>
 

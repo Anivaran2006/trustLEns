@@ -70,7 +70,7 @@ class MLInferenceService:
         Executes inference for a given raw message.
         Returns:
             classification: 'HAM' (Legitimate) or 'SPAM' (Deceptive/Suspicious)
-            risk_score: Float between 0.0 and 1.0 (calibrated fraud probability estimate)
+            risk_score: Float between 0.0 and 1.0 (statistical fraud probability estimate)
             risk_level: 'LOW', 'MEDIUM', 'HIGH'
             observable_indicators: Dict of parsed regex signals
             model_version: String

@@ -31,3 +31,9 @@ htmlcov/
 
 # Logs
 *.log
+cookies.txt
+
+# Local Videos & Media Recordings
+videos/
+*.mp4
+*.webp

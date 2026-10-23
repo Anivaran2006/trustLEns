@@ -12,6 +12,11 @@ from app.ml.inference import inference_service
 from app.ai.agent import investigation_agent
 from app.core.security import sanitize_and_encode_input
 from app.core.config import settings
+from app.alexa_simulation.tools import (
+    trustlens_inspect_message,
+    trustlens_explain_threat,
+    trustlens_get_safety_actions
+)
 
 logger = logging.getLogger("trustlens.alexa_simulation")
 
@@ -182,8 +187,68 @@ class AlexaSimulationEngine:
                 "disclaimer": "Simulated Alexa+ Developer Hackathon Experience — Uses real TrustLens AI ML & NLP backend"
             }
 
+        # Normalize active_scan format if provided in alternative schemas (e.g. flat scan_result or nested)
+        normalized_scan = None
+        if active_scan:
+            if "ml_result" in active_scan and active_scan.get("ml_result"):
+                normalized_scan = active_scan
+            elif "classification" in active_scan or "risk_level" in active_scan or "message_analyzed" in active_scan:
+                # Flat scan_result payload
+                normalized_scan = {
+                    "scan_id": active_scan.get("scan_id"),
+                    "message_text": active_scan.get("message_analyzed") or active_scan.get("message_text", ""),
+                    "ml_result": {
+                        "classification": active_scan.get("classification", "HAM"),
+                        "risk_score": active_scan.get("risk_score", 0.0),
+                        "risk_level": active_scan.get("risk_level", "LOW"),
+                        "is_suspicious": active_scan.get("is_suspicious", False),
+                        "model_name": active_scan.get("model_name", "LogisticRegression_Baseline"),
+                        "model_version": active_scan.get("model_version", "1.0.0"),
+                        "observable_indicators": active_scan.get("observable_indicators", {})
+                    },
+                    "investigation": {
+                        "summary": active_scan.get("summary", ""),
+                        "observable_warning_signs": active_scan.get("warning_signs", []),
+                        "evidence_vs_assumptions": {
+                            "direct_observations": active_scan.get("direct_observations", []),
+                            "potential_implications": active_scan.get("potential_implications", [])
+                        },
+                        "recommended_actions": active_scan.get("recommended_actions", []),
+                        "uncertainty_statement": active_scan.get("uncertainty_statement", ""),
+                        "provider_used": active_scan.get("provider_used", "rule_based_nlp_engine")
+                    },
+                    "scan_result": active_scan
+                }
+            elif "scan_result" in active_scan and active_scan.get("scan_result"):
+                sr = active_scan["scan_result"]
+                normalized_scan = {
+                    "scan_id": active_scan.get("scan_id") or sr.get("scan_id"),
+                    "message_text": sr.get("message_analyzed") or active_scan.get("message_text", ""),
+                    "ml_result": {
+                        "classification": sr.get("classification", "HAM"),
+                        "risk_score": sr.get("risk_score", 0.0),
+                        "risk_level": sr.get("risk_level", "LOW"),
+                        "is_suspicious": sr.get("is_suspicious", False),
+                        "model_name": sr.get("model_name", "LogisticRegression_Baseline"),
+                        "model_version": sr.get("model_version", "1.0.0"),
+                        "observable_indicators": sr.get("observable_indicators", {})
+                    },
+                    "investigation": {
+                        "summary": sr.get("summary", ""),
+                        "observable_warning_signs": sr.get("warning_signs", []),
+                        "evidence_vs_assumptions": {
+                            "direct_observations": sr.get("direct_observations", []),
+                            "potential_implications": sr.get("potential_implications", [])
+                        },
+                        "recommended_actions": sr.get("recommended_actions", []),
+                        "uncertainty_statement": sr.get("uncertainty_statement", ""),
+                        "provider_used": sr.get("provider_used", "rule_based_nlp_engine")
+                    },
+                    "scan_result": sr
+                }
+
+        has_active_context = bool(normalized_scan and normalized_scan.get("ml_result"))
         extracted_message = self.extract_message_from_prompt(clean_prompt)
-        has_active_context = bool(active_scan and active_scan.get("ml_result"))
         intent = self.determine_intent(clean_prompt, extracted_message, has_active_context)
 
         # 1. Reset Intent
@@ -206,19 +271,19 @@ class AlexaSimulationEngine:
                 "disclaimer": "Simulated Alexa+ Developer Hackathon Experience — Uses real TrustLens AI ML & NLP backend"
             }
 
-        # 2. Analyze Message Intent (Real ML Inference + Observable NLP Indicators)
+        # 2. Analyze Message Intent (Real ML Inference + Observable NLP Indicators via MCP Tool)
         if intent == "analyze_message":
             msg_to_analyze = extracted_message or clean_prompt
-            
-            # Execute genuine ML inference
-            ml_result = inference_service.predict(msg_to_analyze)
-            # Execute genuine investigation agent (Bedrock if configured, else Rule-Based NLP engine)
-            investigation = investigation_agent.investigate(msg_to_analyze, ml_result)
 
-            risk_level = ml_result["risk_level"]
-            score_pct = f"{ml_result['risk_score'] * 100:.1f}%"
-            classification = ml_result["classification"]
-            indicators = ml_result.get("observable_indicators", {})
+            # Execute genuine MCP tool function
+            tool_output = trustlens_inspect_message(msg_to_analyze)
+            ml_result = tool_output["ml_result"]
+            investigation = tool_output["investigation"]
+
+            risk_level = tool_output["risk_level"]
+            score_pct = tool_output["risk_percentage"]
+            classification = tool_output["classification"]
+            indicators = tool_output["observable_indicators"]
 
             # Construct Alexa+ natural voice response
             if risk_level in ["HIGH", "MEDIUM"]:
@@ -266,23 +331,23 @@ class AlexaSimulationEngine:
                 ]
 
             scan_card = {
-                "message_analyzed": msg_to_analyze,
+                "message_analyzed": tool_output["message_analyzed"],
                 "classification": classification,
-                "is_suspicious": ml_result["is_suspicious"],
-                "risk_score": ml_result["risk_score"],
+                "is_suspicious": tool_output["is_suspicious"],
+                "risk_score": tool_output["risk_score"],
                 "risk_percentage": score_pct,
                 "risk_level": risk_level,
-                "score_interpretation": ml_result["score_interpretation"],
-                "model_name": ml_result["model_name"],
-                "model_version": ml_result["model_version"],
+                "score_interpretation": tool_output["score_interpretation"],
+                "model_name": tool_output["model_name"],
+                "model_version": tool_output["model_version"],
                 "observable_indicators": indicators,
-                "summary": investigation.get("summary", ""),
-                "warning_signs": investigation.get("observable_warning_signs", []),
-                "direct_observations": investigation.get("evidence_vs_assumptions", {}).get("direct_observations", []),
-                "potential_implications": investigation.get("evidence_vs_assumptions", {}).get("potential_implications", []),
-                "recommended_actions": investigation.get("recommended_actions", []),
-                "uncertainty_statement": investigation.get("uncertainty_statement", ""),
-                "provider_used": investigation.get("provider_used", "rule_based_nlp_engine")
+                "summary": tool_output["summary"],
+                "warning_signs": tool_output["warning_signs"],
+                "direct_observations": tool_output["direct_observations"],
+                "potential_implications": tool_output["potential_implications"],
+                "recommended_actions": tool_output["recommended_actions"],
+                "uncertainty_statement": tool_output["uncertainty_statement"],
+                "provider_used": tool_output["provider_used"]
             }
 
             return {
@@ -294,45 +359,64 @@ class AlexaSimulationEngine:
                 "investigation": investigation,
                 "message_text": msg_to_analyze,
                 "suggested_prompts": suggested_prompts,
-                "provider_used": investigation.get("provider_used", "rule_based_nlp_engine"),
+                "provider_used": tool_output["provider_used"],
                 "context_grounded": True,
                 "disclaimer": "Simulated Alexa+ Developer Hackathon Experience — Uses real TrustLens AI ML & NLP backend"
             }
 
-        # 3. Grounded Follow-up Intents (Why, Evidence, Actions, Phrases)
-        if has_active_context:
-            ml_res = active_scan.get("ml_result", {})
-            inv_res = active_scan.get("investigation", {})
-            msg_text = active_scan.get("message_text", "")
+        # 3. Grounded Follow-up Intents (Why, Evidence, Actions, Phrases via MCP Tools)
+        if has_active_context and normalized_scan:
+            ml_res = normalized_scan.get("ml_result", {})
+            inv_res = normalized_scan.get("investigation", {})
+            msg_text = normalized_scan.get("message_text", "")
 
-            # Invoke existing investigation_agent copilot logic grounded in real results
-            answer_dict = investigation_agent.answer_copilot_question(
-                question=clean_prompt,
-                message=msg_text,
-                investigation=inv_res,
-                ml_result=ml_res
-            )
-
-            tool_name = "trustlens_explain_threat"
             if intent == "followup_action":
                 tool_name = "trustlens_get_safety_actions"
-
-            return {
-                "conversational_response": answer_dict["answer"],
-                "spoken_text": answer_dict["answer"].split("\n\n")[0],
-                "tool_invoked": tool_name,
-                "scan_result": active_scan.get("scan_result"),
-                "ml_result": ml_res,
-                "investigation": inv_res,
-                "message_text": msg_text,
-                "suggested_prompts": answer_dict.get("suggested_followups", [
+                actions_res = trustlens_get_safety_actions(
+                    threat_level=ml_res.get("risk_level", "LOW"),
+                    threat_indicators=ml_res.get("observable_indicators", {}).get("urgency_cues", [])
+                )
+                action_bullets = "\n".join([f"• {a}" for a in actions_res["recommended_actions"]])
+                conversational_text = (
+                    f"Here are the prioritized defensive actions recommended for this **{actions_res['threat_level']}** threat scenario:\n\n"
+                    f"{action_bullets}\n\n"
+                    f"{actions_res['summary']}"
+                )
+                spoken_text = f"Here are the recommended safety actions. First: {actions_res['recommended_actions'][0]}"
+                suggested_prompts = [
+                    "Why is this message suspicious?",
+                    "What evidence supports the prediction?",
+                    "Check another message"
+                ]
+                provider_used = "rule_based_nlp_engine"
+            else:
+                tool_name = "trustlens_explain_threat"
+                explain_res = trustlens_explain_threat(
+                    question=clean_prompt,
+                    message_text=msg_text,
+                    active_scan=normalized_scan
+                )
+                conversational_text = explain_res["answer"]
+                spoken_text = explain_res["answer"].split("\n\n")[0]
+                suggested_prompts = explain_res.get("suggested_followups", [
                     "Why is this message suspicious?",
                     "What should I do next?",
                     "Check another message"
-                ]),
-                "provider_used": answer_dict.get("provider_used", "rule_based_nlp_engine"),
+                ])
+                provider_used = explain_res.get("provider_used", "rule_based_nlp_engine")
+
+            return {
+                "conversational_response": conversational_text,
+                "spoken_text": spoken_text,
+                "tool_invoked": tool_name,
+                "scan_result": normalized_scan.get("scan_result"),
+                "ml_result": ml_res,
+                "investigation": inv_res,
+                "message_text": msg_text,
+                "suggested_prompts": suggested_prompts,
+                "provider_used": provider_used,
                 "context_grounded": True,
-                "disclaimer": "Simulated Alexa+ Developer Hackathon Experience — Grounded in real TrustLens analysis"
+                "disclaimer": "Simulated Alexa+ Developer Hackathon Experience — Uses real TrustLens AI ML & NLP backend"
             }
 
         # 4. Capabilities / General Greeting
@@ -341,7 +425,7 @@ class AlexaSimulationEngine:
                 "conversational_response": (
                     "I am the **TrustLens AI Alexa+ Assistant**. I help protect you from deceptive communications by:\n\n"
                     "• **Real-Time Scanning:** Evaluating SMS smishing, fake bank alerts, parcel scams, and phishing emails.\n"
-                    "• **Empirical Machine Learning:** Applying a calibrated scikit-learn statistical model (TF-IDF + Logistic Regression).\n"
+                    "• **Empirical Machine Learning:** Applying a trained scikit-learn statistical model (TF-IDF + Logistic Regression).\n"
                     "• **Observable Threat Indicators:** Detecting unverified links, urgency keywords, phone shortcodes, and credential solicitations.\n"
                     "• **Actionable Guidance:** Providing step-by-step defensive safety procedures.\n\n"
                     "You can paste any untrusted message or pick one of the sample scenarios to test me!"
